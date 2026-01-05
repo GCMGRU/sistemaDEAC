@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GCM Guarulhos - DEAC • Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <img class="brand-logo" src="logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" />
+        <div class="brand-text">
+          <div class="brand-title">GCM Guarulhos</div>
+          <div class="brand-subtitle">DEAC</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="icon-btn" id="btnBell" title="Alertas">
+        🔔 <span class="pill" id="bellCount">0</span>
+      </button>
+
+      <div class="userbox">
+        <div class="user-name" id="userName">GCM • Usuário</div>
+        <div class="user-role">Uso interno</div>
+      </div>
+
+      <button class="btn-secondary" id="btnLogout">Sair</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- KPI -->
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi-label">Pendentes</div>
+        <div class="kpi-value" id="kpiPending">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Aprovadas</div>
+        <div class="kpi-value" id="kpiApproved">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Recusadas</div>
+        <div class="kpi-value" id="kpiRejected">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Agendadas (7 dias)</div>
+        <div class="kpi-value" id="kpiUpcoming">0</div>
+      </div>
+    </section>
+
+    <nav class="tabs" aria-label="Menu principal">
+      <button class="tab active" data-target="register">Registrar disponibilidade</button>
+      <button class="tab" data-target="requests">Minhas solicitações</button>
+      <button class="tab" data-target="agenda">Agenda</button>
+      <button class="tab" data-target="alerts">Alertas</button>
+    </nav>
+
+
+    <section class="grid">
+
+      <!-- FORM REGISTRO -->
+      <article class="card view" id="view-register" data-view="register">
+        <div class="card-head">
+          <h2>Registrar disponibilidade</h2>
+          <span class="hint">Front-only (mock). Cancelamento permitido apenas em “Pendente”.</span>
+        </div>
+
+        <form id="availabilityForm" class="form" autocomplete="on">
+                  
+          <div class="row">
+            <div class="field">
+              <label for="date">Data</label>
+              <input id="date" type="date" required />
+            </div>
+
+            <div class="field">
+              <label for="period">Período</label>
+              <select id="period" required>
+                <option value="" selected disabled>Selecione…</option>
+                <option>Manhã</option>
+                <option>Tarde</option>
+                <option>Noite</option>
+                <option>Madrugada</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="workload">Carga Horária</label>
+              <select id="workload" required>
+                <option value="" selected disabled>Selecione…</option>
+                <option value="06h">06h</option>
+                <option value="08h">08h</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="note">Observação (opcional)</label>
+              <input id="note" type="text" placeholder="Ex.: disponível após 18h..." />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn" type="submit">Registrar</button>
+            <button class="btn-ghost" type="button" id="btnFillExample">Exemplo</button>
+          </div>
+        </form>
+      </article>
+      
+         <!-- TABELA SOLICITAÇÕES -->
+<article class="card view" id="view-requests" data-view="requests">
+  <div class="card-head split">
+    <h2>Minhas solicitações</h2>
+
+    <div class="filters">
+      <button class="chip active" data-filter="all">Todas</button>
+      <button class="chip" data-filter="pending">Pendentes</button>
+      <button class="chip" data-filter="approved">Aprovadas</button>
+      <button class="chip" data-filter="rejected">Recusadas</button>
+      <button class="chip" data-filter="canceled">Canceladas</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table" aria-label="Solicitações">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Período</th>
+          <th>Local</th>
+          <th>Status</th>
+          <th class="th-actions">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="requestsTbody"></tbody>
+    </table>
+
+    <div class="empty" id="requestsEmpty">
+      <div class="empty-title">Nenhuma solicitação ainda</div>
+      <div class="empty-sub">Registre sua disponibilidade no card ao lado.</div>
+    </div>
+
+    <div class="actions-inline">
+      <button class="btn-ghost" id="btnSimApprove">Simular Aprovação</button>
+      <button class="btn-ghost" id="btnSimReject">Simular Recusa</button>
+    </div>
+  </div>
+</article>
+
+<!-- AGENDA -->
+<article class="card view" id="view-agenda" data-view="agenda">
+  <div class="card-head">
+    <h2>Agenda • próximos 7 dias</h2>
+    <span class="hint">Mostra apenas aprovações confirmadas (mock).</span>
+  </div>
+
+
+    <div class="cal">
+      <div class="cal-head">
+        <button class="btn-ghost" id="calPrev">◀</button>
+        <div class="cal-title" id="calTitle">Mês</div>
+        <button class="btn-ghost" id="calNext">▶</button>
+      </div>
+
+      <div class="cal-weekdays">
+        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+      </div>
+
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+  <div class="agenda" id="agendaList"></div>
+
+  <div class="empty" id="agendaEmpty">
+    <div class="empty-title">Sem agendamentos confirmados</div>
+    <div class="empty-sub">Quando aprovar, aparece aqui.</div>
+  </div>
+</article>
+
+      <!-- ALERTAS -->
+      <article class="card view" id="view-alerts" data-view="alerts">
+        <div class="card-head split">
+          <h2>Alertas</h2>
+          <button class="btn-ghost" id="btnClearAlerts">Limpar</button>
+        </div>
+
+        <div class="alerts" id="alertsList"></div>
+
+        <div class="empty" id="alertsEmpty">
+          <div class="empty-title">Sem alertas</div>
+          <div class="empty-sub">Aprovação/recusa/cancelamento geram alertas.</div>
+        </div>
+      </article>
+
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Detalhes</div>
+        <button class="icon-btn" id="modalClose" title="Fechar">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot">
+        <button class="btn-secondary" id="modalOk">Ok</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
