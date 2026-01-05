@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GCM Guarulhos - DEAC</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="logo_gcm.png" type="image/x-icon">
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+  <main class="wrap">
+    <section class="card" aria-label="Acesso ao sistema">
+
+      <header class="brand">
+        <img class="brand-logo" src="logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" />
+        <div class="brand-text">
+          <div class="brand-title">GCM Guarulhos</div>
+          <div class="brand-subtitle">DEAC</div>
+        </div>
+      </header>
+
+      <div class="divider"></div>
+
+      <form id="loginForm" class="form" autocomplete="on">
+        <div class="field">
+          <label for="usuario">Usuário</label>
+          <input
+            id="usuario"
+            name="usuario"
+            type="text"
+            placeholder="Digite seu usuário"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="senha">Senha</label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            placeholder="Digite sua senha"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button class="btn" type="submit">Entrar</button>
+      </form>
+
+      <footer class="foot">
+        <span>DEAC • Diária Especial por Atividade Complementar</span>
+      </footer>
+
+    </section>
+  </main>
+
+</body>
+</html>

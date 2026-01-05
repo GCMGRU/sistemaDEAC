@@ -1,0 +1,215 @@
+:root{
+  --base: #013963;
+  --base-2: #022a4a;
+  --base-3: #001c33;
+
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.70);
+
+  --card: rgba(255,255,255,.07);
+  --card-2: rgba(255,255,255,.05);
+  --border: rgba(255,255,255,.14);
+
+  --input-bg: rgba(255,255,255,.06);
+  --input-bd: rgba(255,255,255,.16);
+  --input-bd-focus: rgba(255,255,255,.30);
+
+  --shadow: 0 30px 90px rgba(0,0,0,.55);
+  --shadow-soft: 0 12px 30px rgba(0,0,0,.28);
+
+  --radius: 18px;
+  --radius-sm: 12px;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  min-height: 100vh;
+  color: var(--text);
+
+  /* Fundo mais “premium” e menos estourado */
+  background:
+    radial-gradient(900px 560px at 15% 10%, rgba(255,255,255,.10), transparent 60%),
+    radial-gradient(900px 560px at 85% 35%, rgba(255,255,255,.08), transparent 55%),
+    radial-gradient(800px 500px at 50% 110%, rgba(0,0,0,.55), transparent 55%),
+    linear-gradient(135deg, var(--base), var(--base-3) 65%, #000b12);
+}
+
+.wrap{
+  min-height: 100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 32px 16px;
+}
+
+/* Cartão com “moldura” elegante */
+.card{
+  width: min(460px, 100%);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--card), rgba(255,255,255,.03));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 0;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+
+/* miolo */
+.card > *{
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.brand{
+  padding-top: 22px;
+  padding-bottom: 18px;
+
+  display:flex;
+  align-items:center;
+  gap: 14px;
+
+  width: fit-content;
+  margin: 0 auto;
+}
+
+/* Deixa a logo mais “nobre”, reduzindo o impacto do detalhe do rosto */
+.brand-logo{
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow-soft);
+}
+
+.brand-text{
+  display:flex;
+  flex-direction:column;
+  line-height: 1.12;
+}
+
+.brand-title{
+  font-size: 19px;          /* ligeiramente menor */
+  font-weight: 600;         /* mais leve que 800 */
+  letter-spacing: .4px;     /* sofisticação */
+  color: rgba(255,255,255,.95);
+}
+
+
+.brand-subtitle{
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;      /* institucional */
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(255,255,255,.78);
+}
+
+.brand-text{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+
+.divider{
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+  margin: 0;
+}
+
+/* formulário */
+.form{
+  padding-top: 18px;
+  padding-bottom: 18px;
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap: 7px;
+}
+
+label{
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,.85);
+}
+
+/* Inputs mais “corporate” */
+input{
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--input-bd);
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+  color: #fff;
+  padding: 0 14px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .08s ease;
+}
+
+input::placeholder{
+  color: rgba(255,255,255,.55);
+}
+
+input:focus{
+  border-color: var(--input-bd-focus);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.10);
+}
+
+/* Botão com “cara de sistema oficial” */
+.btn{
+  margin-top: 4px;
+  height: 43px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .2px;
+  cursor: pointer;
+  color: #fff;
+
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06)),
+              linear-gradient(180deg, #0b5f90, #013963);
+  box-shadow: 0 18px 40px rgba(0,0,0,.32);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+
+.btn:hover{
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 22px 55px rgba(0,0,0,.38);
+}
+
+.btn:active{
+  transform: translateY(0px);
+}
+
+/* Rodapé mais elegante */
+.foot{
+  padding-top: 14px;
+  padding-bottom: 18px;
+  border-top: 1px solid rgba(255,255,255,.10);
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,.75);
+}
+
+/* Responsivo */
+@media (max-width: 380px){
+  .brand-logo{ width: 64px; height: 64px; }
+  .brand-title{ font-size: 18px; }
+}
