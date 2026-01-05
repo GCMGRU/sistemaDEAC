@@ -194,6 +194,20 @@ h2{
   gap: 10px;
 }
 
+.row-compact{
+  grid-template-columns: 220px 220px;
+  justify-content: start;
+}
+
+.row-compact.row-single{
+  grid-template-columns: 220px;
+}
+
+.row-compact input,
+.row-compact select{
+  height: 40px;
+}
+
 .field{ display:flex; flex-direction:column; gap: 7px; }
 
 label{ font-size: 12px; font-weight: 800; color: rgba(255,255,255,.85); }
@@ -529,6 +543,8 @@ input:focus, select:focus{
 }
 @media (max-width: 520px){
   .row{ grid-template-columns: 1fr; }
+  .row-compact,
+  .row-compact.row-single{ grid-template-columns: 1fr; }
   .topbar{ flex-direction: column; align-items: stretch; }
   .topbar-right{ justify-content: space-between; flex-wrap: wrap; }
 }
