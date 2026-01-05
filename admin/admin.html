@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DEAC • Admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <img class="brand-logo" src="logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" />
+        <div class="brand-text">
+          <div class="brand-title">GCM Guarulhos</div>
+          <div class="brand-subtitle">DEAC • ADMIN</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="icon-btn" id="btnBell" title="Logs/Alertas do Admin">
+        🔔 <span class="pill" id="bellCount">0</span>
+      </button>
+
+      <div class="userbox">
+        <div class="user-name" id="userName">Admin • Usuário</div>
+        <div class="user-role">Painel Administrativo</div>
+      </div>
+
+      <button class="btn-secondary" id="btnBack">Voltar</button>
+      <button class="btn-secondary" id="btnLogout">Sair</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- KPI -->
+    <section class="kpis">
+      <div class="kpi">
+        <div class="kpi-label">Pendências</div>
+        <div class="kpi-value" id="kpiPending">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Aprovadas (hoje)</div>
+        <div class="kpi-value" id="kpiApprovedToday">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Recusadas (hoje)</div>
+        <div class="kpi-value" id="kpiRejectedToday">0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Janelas Ativas</div>
+        <div class="kpi-value" id="kpiWindowsActive">0</div>
+      </div>
+    </section>
+
+    <section class="grid">
+
+      <!-- PENDÊNCIAS -->
+      <article class="card">
+        <div class="card-head split">
+          <h2>Pendências para aprovação</h2>
+
+          <div class="filters">
+            <button class="chip active" data-filter="all">Todas</button>
+            <button class="chip" data-filter="pending">Pendentes</button>
+            <button class="chip" data-filter="approved">Aprovadas</button>
+            <button class="chip" data-filter="rejected">Recusadas</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" aria-label="Pendências">
+            <thead>
+              <tr>
+                <th>Guarda</th>
+                <th>Data</th>
+                <th>Período</th>
+                <th>Local</th>
+                <th>Status</th>
+                <th class="th-actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="pendingTbody"></tbody>
+          </table>
+
+          <div class="empty" id="pendingEmpty">
+            <div class="empty-title">Sem pendências</div>
+            <div class="empty-sub">Nenhuma disponibilidade aguardando decisão.</div>
+          </div>
+
+          <div class="actions-inline">
+            <button class="btn-ghost" id="btnSeed">Gerar pendências (mock)</button>
+            <button class="btn-ghost" id="btnClearRequests">Limpar (mock)</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- CADASTRO JANELAS -->
+      <article class="card">
+        <div class="card-head">
+          <h2>Cadastrar janela DEAC</h2>
+          <span class="hint">Uma “janela” é uma opção pré-cadastrada para o GCM escolher.</span>
+        </div>
+
+        <form id="windowForm" class="form">
+          <div class="row">
+            <div class="field">
+              <label for="wDate">Data</label>
+              <input id="wDate" type="date" required />
+            </div>
+
+            <div class="field">
+              <label for="wPeriod">Período</label>
+              <select id="wPeriod" required>
+                <option value="" selected disabled>Selecione…</option>
+                <option>Manhã</option>
+                <option>Tarde</option>
+                <option>Noite</option>
+                <option>Madrugada</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="wPlace">Local</label>
+              <input id="wPlace" type="text" placeholder="Ex.: Centro • Base Operacional" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="wSlots">Vagas (opcional)</label>
+              <input id="wSlots" type="number" min="1" step="1" placeholder="Ex.: 10" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn" type="submit">Adicionar janela</button>
+            <button class="btn-ghost" type="button" id="btnWindowExample">Exemplo</button>
+          </div>
+        </form>
+      </article>
+
+      <!-- LISTA JANELAS -->
+      <article class="card">
+        <div class="card-head split">
+          <h2>Janelas cadastradas</h2>
+          <div class="hint">Ative/desative janelas. (Front-only)</div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" aria-label="Janelas cadastradas">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Período</th>
+                <th>Local</th>
+                <th>Vagas</th>
+                <th>Status</th>
+                <th class="th-actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="windowsTbody"></tbody>
+          </table>
+
+          <div class="empty" id="windowsEmpty">
+            <div class="empty-title">Nenhuma janela cadastrada</div>
+            <div class="empty-sub">Cadastre opções para os GCMS selecionarem no front.</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- LOGS/ALERTAS -->
+      <article class="card">
+        <div class="card-head split">
+          <h2>Logs do Admin</h2>
+          <button class="btn-ghost" id="btnClearLogs">Limpar</button>
+        </div>
+
+        <div class="alerts" id="logsList"></div>
+
+        <div class="empty" id="logsEmpty">
+          <div class="empty-title">Sem logs</div>
+          <div class="empty-sub">Ações do admin aparecem aqui (aprovar/recusar/cadastrar janela).</div>
+        </div>
+      </article>
+
+    </section>
+  </main>
+
+  <!-- MODAL DECISÃO -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Decisão</div>
+        <button class="icon-btn" id="modalClose" title="Fechar">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-foot">
+        <button class="btn-secondary" id="modalCancel">Cancelar</button>
+        <button class="btn" id="modalConfirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
