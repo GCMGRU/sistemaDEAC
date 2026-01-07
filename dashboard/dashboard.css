@@ -366,6 +366,12 @@ body.app-body {
   gap: 16px;
 }
 
+.stacked-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* CARDS */
 
 .card {
@@ -439,6 +445,78 @@ body.app-body {
 .list-card .pill {
   padding: 4px 9px;
   font-size: 10px;
+}
+
+/* PRÓXIMOS COMPROMISSOS */
+
+.upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upcoming-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: radial-gradient(circle at top left, rgba(38, 198, 218, 0.08), transparent 60%),
+    rgba(4, 18, 38, 0.65);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.upcoming-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.upcoming-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.upcoming-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.upcoming-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.upcoming-badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(105, 240, 174, 0.16);
+  color: var(--success);
+}
+
+.upcoming-empty {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+.upcoming-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* FORM */
