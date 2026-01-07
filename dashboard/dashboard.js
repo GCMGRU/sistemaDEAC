@@ -25,7 +25,7 @@ const $$ = (sel) => Array.from(document.querySelectorAll(sel));
  */
 const state = {
   filter: "all",
-  user: { name: "GCM • Guilherme" },
+  user: { name: "GCM • 3ªCL Pelegrino" },
   requests: [],
   alerts: [],
   agendaCursor: null,
@@ -494,33 +494,31 @@ function renderAgendaStrip() {
   const wrapper = $("#agendaStrip");
   if (!wrapper) return;
 
-  if (!state.requests.length) {
-    wrapper.innerHTML = '<span class="muted" style="font-size:12px;">Sem registros para exibir.</span>';
+  const approvedItems = state.requests
+    .filter((req) => req.status === "approved")
+    .sort(sortByDate);
+
+  if (!approvedItems.length) {
+    wrapper.innerHTML = '<div class="agenda-empty">Nenhuma disponibilidade agendada no momento.</div>';
     return;
   }
 
-  // Agrupa por data
-  const grouped = {};
-  state.requests.forEach((r) => {
-    if (!grouped[r.date]) grouped[r.date] = [];
-    grouped[r.date].push(r);
-  });
-
-  const dates = Object.keys(grouped).sort();
-  const html = dates
-    .slice(0, 12)
-    .map((date) => {
-      const items = grouped[date];
-      const total = items.length;
-      const approved = items.filter((x) => x.status === "approved").length;
-      const pending = items.filter((x) => x.status === "pending").length;
-
+  const html = approvedItems
+    .slice(0, 6)
+    .map((req) => {
       return `
-      <div class="agenda-chip">
-        <strong>${fmtDateBR(date)}</strong>
-        <span>${total} registro(s)</span><br/>
-        <span>Pend: ${pending} • Aprov: ${approved}</span>
-      </div>
+      <article class="agenda-card">
+        <div class="agenda-card-header">
+          <span class="agenda-date">${fmtDateBR(req.date)}</span>
+          <span class="agenda-badge">Agendada</span>
+        </div>
+        <div class="agenda-info">
+          <span>${req.period}</span>
+          <span>•</span>
+          <span>${req.prefer}</span>
+        </div>
+        <div class="agenda-meta">Carga horária: ${req.workload || "—"}</div>
+      </article>
     `;
     })
     .join("");
