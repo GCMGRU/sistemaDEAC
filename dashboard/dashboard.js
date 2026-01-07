@@ -29,7 +29,10 @@ const state = {
   requests: [],
   alerts: [],
   agendaCursor: null,
+  requestsPage: 1,
 };
+
+const REQUESTS_PER_PAGE = 3;
 
 
 // ============================================================================
@@ -325,6 +328,7 @@ function statusLabel(status) {
 function renderRequests() {
   const listEl = $("#requestList");
   const emptyEl = $("#listEmpty");
+  const paginationEl = $("#requestPagination");
   if (!listEl || !emptyEl) return;
 
   const data = getFilteredRequests();
@@ -332,12 +336,22 @@ function renderRequests() {
   if (!data.length) {
     emptyEl.style.display = "block";
     listEl.innerHTML = "";
+    if (paginationEl) {
+      paginationEl.innerHTML = "";
+      paginationEl.style.display = "none";
+    }
     return;
   }
 
   emptyEl.style.display = "none";
 
-  const html = data
+  const totalPages = Math.max(1, Math.ceil(data.length / REQUESTS_PER_PAGE));
+  state.requestsPage = Math.min(Math.max(state.requestsPage, 1), totalPages);
+
+  const startIndex = (state.requestsPage - 1) * REQUESTS_PER_PAGE;
+  const pageItems = data.slice(startIndex, startIndex + REQUESTS_PER_PAGE);
+
+  const html = pageItems
     .map((req) => {
       const statusClass = `status-${req.status}`;
       const badgeHtml = `<span class="status-pill ${statusClass}">${statusLabel(req.status)}</span>`;
@@ -375,6 +389,21 @@ function renderRequests() {
     .join("");
 
   listEl.innerHTML = html;
+
+  if (paginationEl) {
+    paginationEl.style.display = totalPages > 1 ? "flex" : "none";
+    paginationEl.innerHTML = `
+      <span class="pagination-info">Página ${state.requestsPage} de ${totalPages}</span>
+      <div class="pagination-actions">
+        <button type="button" class="btn-ghost btn-sm" data-page="prev" ${
+          state.requestsPage === 1 ? "disabled" : ""
+        }>Anterior</button>
+        <button type="button" class="btn-ghost btn-sm" data-page="next" ${
+          state.requestsPage === totalPages ? "disabled" : ""
+        }>Próxima</button>
+      </div>
+    `;
+  }
 
   // Liga eventos de ação de cada card
   $$("#requestList .request-card").forEach((card) => {
@@ -592,6 +621,7 @@ function setupForm() {
     };
 
     await api.criarDisponibilidade(req);
+    state.requestsPage = 1;
     renderRequests();
     renderAgendaStrip();
     form.reset();
@@ -617,9 +647,33 @@ function setupFilter() {
 
     const filter = btn.dataset.filter;
     state.filter = filter;
+    state.requestsPage = 1;
 
     $$("#statusFilter .pill").forEach((el) => el.classList.remove("active"));
     btn.classList.add("active");
+
+    renderRequests();
+  });
+}
+
+// ============================================================================
+// Paginação de disponibilidades
+// ============================================================================
+
+function setupRequestPagination() {
+  const paginationEl = $("#requestPagination");
+  if (!paginationEl) return;
+
+  paginationEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-page]");
+    if (!btn || btn.disabled) return;
+
+    const action = btn.dataset.page;
+    if (action === "prev") {
+      state.requestsPage = Math.max(1, state.requestsPage - 1);
+    } else if (action === "next") {
+      state.requestsPage += 1;
+    }
 
     renderRequests();
   });
@@ -937,6 +991,7 @@ async function init() {
   setupModalEvents();
   setupForm();
   setupFilter();
+  setupRequestPagination();
   setupSidebarNav();
   setupBell();
   setupScrollTop();
