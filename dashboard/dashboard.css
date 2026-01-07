@@ -26,6 +26,8 @@
 
   --transition-fast: 150ms ease-out;
   --transition-med: 220ms ease-out;
+
+  --bottom-nav-height: 88px;
 }
 
 *,
@@ -590,6 +592,11 @@ textarea:focus {
   justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.form-hint {
+  font-size: 11px;
+  color: var(--muted);
 }
 
 /* PILL SWITCH */
@@ -1188,6 +1195,69 @@ textarea:focus {
   transform: translateX(-50%) translateY(0);
 }
 
+/* VOLTAR AO TOPO */
+.back-to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 96px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  background: rgba(15, 23, 42, 0.95);
+  color: var(--text);
+  font-size: 20px;
+  display: none;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  z-index: 25;
+}
+
+.back-to-top.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-top {
+  position: fixed;
+  right: 18px;
+  bottom: calc(var(--bottom-nav-height) + 16px + env(safe-area-inset-bottom));
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(38, 198, 218, 0.5);
+  background: rgba(9, 28, 52, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 55;
+}
+
+.scroll-top::before {
+  content: "↑";
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: whitesmoke;
+}
+
+
+.scroll-top:hover {
+  background: rgba(38, 198, 218, 0.18);
+}
+
+.scroll-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
 /* AUXILIARES */
 
 .btn-sm {
@@ -1254,7 +1324,7 @@ textarea:focus {
 
 @media (max-width: 860px) {
   .app-shell {
-    padding: 12px 12px 96px;
+    padding: 12px calc(12px + env(safe-area-inset-right)) 96px calc(12px + env(safe-area-inset-left));
   }
 
   .app-sidebar {
@@ -1301,7 +1371,7 @@ textarea:focus {
   }
 
   .app-main {
-    padding-bottom: 88px;
+    padding-bottom: var(--bottom-nav-height);
   }
 
   .app-header {
@@ -1321,11 +1391,14 @@ textarea:focus {
   .header-date {
     font-size: 11px;
   }
+  .scroll-top {
+    display: flex;
+  }
 }
 
 @media (max-width: 640px) {
   .app-shell {
-    padding: 10px 8px;
+    padding: 10px calc(8px + env(safe-area-inset-right)) 10px calc(8px + env(safe-area-inset-left));
   }
 
   .card-header {
@@ -1360,15 +1433,38 @@ textarea:focus {
     padding: 10px 16px;
     font-size: 13px;
   }
+ /* ===========================
+   MOBILE: botões do form footer (premium)
+   =========================== */
 
+@media (max-width: 640px) {
+  /* mantém o hint e o layout ok */
   .form-footer {
-    align-items: flex-start;
+    align-items: stretch; /* melhor que flex-start */
   }
 
+  /* aqui é o principal: em vez de coluna, vira GRID 2 colunas */
   .form-footer-right {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr; /* Limpar menor, Enviar maior */
+    gap: 10px;
     width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
   }
+
+  /* garante botões com altura boa e ocupando coluna inteira */
+  .form-footer-right .btn-ghost,
+  .form-footer-right .btn-primary,
+  .form-footer-right .btn-soft {
+    width: 100%;
+    min-height: 46px;
+  }
+}
+
+/* celular muito pequeno: empilha */
+@media (max-width: 380px) {
+  .form-footer-right {
+    grid-template-columns: 1fr;
+  }
+}
+
 }
