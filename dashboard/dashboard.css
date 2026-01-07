@@ -819,18 +819,150 @@ textarea:focus {
   font-weight: 600;
   cursor: pointer;
   position: relative;
+  overflow: visible;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+   z-index: 1;  
 }
 
 .calendar-day:hover {
   transform: translateY(-1px);
   border-color: rgba(255, 255, 255, 0.28);
+   z-index: 20;  
+}
+
+.calendar-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(6px);
+  min-width: 220px;
+  max-width: 260px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #020617;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--text);
+  font-size: 11px;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: auto;
+  transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+  z-index: 3;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.45);
+}
+
+/* continua abrindo quando passa o mouse no dia */
+.calendar-day:hover .calendar-tooltip,
+.calendar-day .calendar-tooltip:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+
+/* Para dias na borda direita do calendário,
+   abre o tooltip um pouco mais "pra dentro" */
+.calendar-day.calendar-day--edge-right .calendar-tooltip {
+  left: auto;
+  right: 0;
+  transform: translateY(6px);
+}
+
+.calendar-day.calendar-day--edge-right:hover .calendar-tooltip {
+  transform: translateY(0);
+}
+
+
+.calendar-tooltip-section + .calendar-tooltip-section {
+  margin-top: 8px;
+}
+/* "Setinha" do tooltip (padrão, centralizada) */
+.calendar-tooltip::before,
+.calendar-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px; /* fica colada na borda de baixo do tooltip */
+  transform: translateX(-50%);
+  border-style: solid;
+}
+
+/* borda da seta (mesma cor da borda do tooltip) */
+.calendar-tooltip::before {
+  border-width: 8px 8px 0 8px; /* triângulo apontando pra baixo */
+  border-color: rgba(148, 163, 184, 0.35) transparent transparent transparent;
+}
+
+/* preenchimento da seta (mesma cor do fundo do tooltip) */
+.calendar-tooltip::after {
+  bottom: -7px; /* 1px pra cima pra parecer borda */
+  border-width: 7px 7px 0 7px;
+  border-color: #020617 transparent transparent transparent;
+}/* Nos dias de borda direita, desloca a seta um pouco pra dentro */
+.calendar-day.calendar-day--edge-right .calendar-tooltip::before,
+.calendar-day.calendar-day--edge-right .calendar-tooltip::after {
+  left: auto;
+  right: 22px;   /* ajusta se quiser mais pra esquerda/direita */
+  transform: none;
+}
+
+
+
+.tooltip-divider {
+  height: 1px;
+  margin: 8px 0;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.tooltip-title {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tooltip-line {
+  margin-bottom: 4px;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.tooltip-line strong {
+  color: rgba(248, 250, 252, 0.95);
+  font-weight: 600;
 }
 
 .calendar-day span {
   position: relative;
   z-index: 1;
+}
+
+.calendar-day[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(2, 8, 22, 0.95);
+  color: var(--text);
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-soft);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  z-index: 4;
+}
+
+.calendar-day[data-tooltip]:hover::after,
+.calendar-day[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .calendar-day.status-pending {
@@ -894,6 +1026,38 @@ textarea:focus {
   color: var(--muted);
 }
 
+/* botão de copiar no canto superior direito */
+.calendar-tooltip-copy {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.9);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--muted);
+  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+/* ícone do botão (clipboard) */
+.calendar-tooltip-copy::before {
+  content: "📋";
+}
+
+.calendar-tooltip-copy:hover {
+  background: rgba(37, 99, 235, 0.16);
+  border-color: var(--accent-strong);
+  color: var(--text);
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.55);
+}
+
 
 /* MODAL */
 
@@ -944,6 +1108,9 @@ textarea:focus {
   font-size: 13px;
   color: var(--muted);
   overflow-y: auto;
+}
+.agenda-calendar {
+  overflow: visible;
 }
 
 .modal-footer {
