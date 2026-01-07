@@ -1,6 +1,8 @@
+// Utilitários rápidos
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+// Estado principal da aplicação
 const state = {
   filter: "all",
   user: { name: "GCM • Guilherme" },
@@ -8,419 +10,550 @@ const state = {
   alerts: [],
 };
 
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth(); // 0-11
+// --- Helpers de data -------------------------------------------------------
+
+function toISODate(date) {
+  if (typeof date === "string") return date;
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
 
 function fmtDateBR(iso) {
+  if (!iso) return "";
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
 
-function toast(msg) {
+function fmtTodayLabel() {
+  const now = new Date();
+  const opts = { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" };
+  return now.toLocaleDateString("pt-BR", opts).replace(",", "");
+}
+
+// --- Persistência simples ---------------------------------------------------
+
+const STORAGE_KEY = "deac-dashboard-requests-v1";
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      state.requests = parsed;
+    }
+  } catch (err) {
+    console.warn("Erro ao carregar storage:", err);
+  }
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.requests));
+  } catch (err) {
+    console.warn("Erro ao salvar storage:", err);
+  }
+}
+
+// --- Toast ------------------------------------------------------------------
+
+let toastTimer = null;
+
+function showToast(message) {
   const el = $("#toast");
-  el.textContent = msg;
-  el.style.display = "block";
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => (el.style.display = "none"), 2600);
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add("show");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.classList.remove("show");
+  }, 2800);
 }
 
-function addAlert(title, subtitle) {
-  state.alerts.unshift({ id: crypto.randomUUID(), title, subtitle });
-  renderAlerts();
-  updateBell();
-}
-
-function updateBell() {
-  $("#bellCount").textContent = String(state.alerts.length);
-}
-
-function statusLabel(s) {
-  return { pending:"Pendente", approved:"Aprovada", rejected:"Recusada", canceled:"Cancelada" }[s] || s;
-}
-
-function renderKPIs() {
-  const pending = state.requests.filter(r => r.status === "pending").length;
-  const approved = state.requests.filter(r => r.status === "approved").length;
-  const rejected = state.requests.filter(r => r.status === "rejected").length;
-
-  // próximos 7 dias (front-only: usa data 00:00)
-  const now = new Date();
-  const in7 = new Date(); in7.setDate(in7.getDate() + 7);
-  const upcoming = state.requests.filter(r => {
-    if (r.status !== "approved") return false;
-    const dt = new Date(r.date + "T00:00:00");
-    return dt >= now && dt <= in7;
-  }).length;
-
-  $("#kpiPending").textContent = pending;
-  $("#kpiApproved").textContent = approved;
-  $("#kpiRejected").textContent = rejected;
-  $("#kpiUpcoming").textContent = upcoming;
-}
-
-function renderRequests() {
-  const tbody = $("#requestsTbody");
-  tbody.innerHTML = "";
-
-  const rows = state.requests.filter(r => state.filter === "all" ? true : r.status === state.filter);
-
-  $("#requestsEmpty").style.display = rows.length ? "none" : "block";
-
-  for (const r of rows) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${fmtDateBR(r.date)}</td>
-      <td>${r.period}</td>
-      <td>${r.place ? r.place : "<span style='opacity:.75'>A definir</span>"}</td>
-      <td><span class="badge ${r.status}">${statusLabel(r.status)}</span></td>
-      <td>
-        <div class="cell-actions">
-          <button class="btn-ghost" data-action="details" data-id="${r.id}">Detalhes</button>
-          <button class="btn-secondary" data-action="cancel" data-id="${r.id}" ${r.status === "pending" ? "" : "disabled"}>Cancelar</button>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  }
-
-  tbody.querySelectorAll("button[data-action]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.id;
-      const action = btn.dataset.action;
-      const req = state.requests.find(x => x.id === id);
-      if (!req) return;
-
-      if (action === "details") {
-        openModal("Detalhes", `
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <div><b>Data:</b> ${fmtDateBR(req.date)}</div>
-            <div><b>Período:</b> ${req.period}</div>
-            <div><b>Carga Horária:</b> ${req.workload}</div>
-            <div><b>Local:</b> ${req.place}</div>
-            <div><b>Status:</b> ${statusLabel(req.status)}</div>
-            <div><b>Observação:</b> ${req.note ? req.note : "<span style='opacity:.75'>—</span>"}</div>
-            <div><b>Feedback:</b> ${req.feedback ? req.feedback : "<span style='opacity:.75'>—</span>"}</div>
-          </div>
-        `);
-      }
-
-      if (action === "cancel") {
-        if (req.status !== "pending") return;
-        req.status = "canceled";
-        req.feedback = "Cancelado pelo usuário (mock).";
-        toast("Disponibilidade cancelada.");
-        addAlert("Disponibilidade cancelada", `${fmtDateBR(req.date)} • ${req.period} • ${req.place}`);
-        rerenderAll();
-      }
-    });
-  });
-}
-
-function renderAgenda() {
-  const list = $("#agendaList");
-  list.innerHTML = "";
-
-  const now = new Date();
-  const in7 = new Date(); in7.setDate(in7.getDate() + 7);
-
-  const items = state.requests
-    .filter(r => r.status === "approved" && r.place)
-    .filter(r => {
-      const dt = new Date(r.date + "T00:00:00");
-      return dt >= now && dt <= in7;
-    })
-    .sort((a,b) => a.date.localeCompare(b.date));
-
-  $("#agendaEmpty").style.display = items.length ? "none" : "block";
-
-  for (const r of items) {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `
-      <div class="item-title">${fmtDateBR(r.date)} • ${r.period}</div>
-      <div class="item-sub">${r.place}</div>
-    `;
-    list.appendChild(div);
-  }
-}
-
-function renderAlerts() {
-  const list = $("#alertsList");
-  list.innerHTML = "";
-
-  $("#alertsEmpty").style.display = state.alerts.length ? "none" : "block";
-
-  for (const a of state.alerts.slice(0, 8)) {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `
-      <div class="item-title">${a.title}</div>
-      <div class="item-sub">${a.subtitle}</div>
-    `;
-    list.appendChild(div);
-  }
-}
-
-function setFilter(filter) {
-  state.filter = filter;
-  $$(".chip").forEach(c => c.classList.toggle("active", c.dataset.filter === filter));
-  renderRequests();
-}
-
-function rerenderAll() {
-  renderKPIs();
-  renderRequests();
-  renderAgenda();
-  renderCalendar();
-}
+// --- Modal ------------------------------------------------------------------
 
 function openModal(title, html) {
+  const backdrop = $("#modalBackdrop");
+  if (!backdrop) return;
   $("#modalTitle").textContent = title;
   $("#modalBody").innerHTML = html;
-  $("#modalBackdrop").style.display = "flex";
-  $("#modalBackdrop").setAttribute("aria-hidden", "false");
+  backdrop.hidden = false;
 }
 
 function closeModal() {
-  $("#modalBackdrop").style.display = "none";
-  $("#modalBackdrop").setAttribute("aria-hidden", "true");
+  const backdrop = $("#modalBackdrop");
+  if (!backdrop) return;
+  backdrop.hidden = true;
 }
 
-function pickFirstPending() {
-  return state.requests.find(r => r.status === "pending");
+function setupModalEvents() {
+  $("#modalClose").addEventListener("click", closeModal);
+  $("#modalOk").addEventListener("click", closeModal);
+  $("#modalBackdrop").addEventListener("click", (e) => {
+    if (e.target.id === "modalBackdrop") closeModal();
+  });
 }
 
-function init() {
-  $("#userName").textContent = state.user.name;
+// --- Listagem de disponibilidades ------------------------------------------
 
-  // filtros
-  $$(".chip").forEach(chip => chip.addEventListener("click", () => setFilter(chip.dataset.filter)));
+function getFilteredRequests() {
+  if (state.filter === "all") return state.requests.slice().sort(sortByDate);
+  return state.requests
+    .filter((r) => r.status === state.filter)
+    .sort(sortByDate);
+}
 
-  // cadastrar disponibilidade
-  $("#availabilityForm").addEventListener("submit", (e) => {
+function sortByDate(a, b) {
+  if (a.date === b.date) return a.period.localeCompare(b.period);
+  return a.date.localeCompare(b.date);
+}
+
+function statusLabel(status) {
+  switch (status) {
+    case "pending":
+      return "Pendente";
+    case "approved":
+      return "Aprovada";
+    case "rejected":
+      return "Recusada";
+    case "canceled":
+      return "Cancelada";
+    default:
+      return status;
+  }
+}
+
+function renderRequests() {
+  const listEl = $("#requestList");
+  const emptyEl = $("#listEmpty");
+  if (!listEl || !emptyEl) return;
+
+  const data = getFilteredRequests();
+
+  if (!data.length) {
+    emptyEl.style.display = "block";
+    listEl.innerHTML = "";
+    return;
+  }
+
+  emptyEl.style.display = "none";
+
+  const html = data
+    .map((req) => {
+      const statusClass = `status-${req.status}`;
+      const badgeHtml = `<span class="status-pill ${statusClass}">${statusLabel(req.status)}</span>`;
+      const obs = req.obs ? `<div class="request-extra">${req.obs}</div>` : "";
+
+      const canCancel = req.status === "pending";
+      const canRemove = req.status === "canceled" || req.status === "rejected";
+
+      return `
+      <article class="request-card" data-id="${req.id}">
+        <div class="request-main">
+          <div class="request-title">${fmtDateBR(req.date)} • ${req.period} • ${req.prefer}</div>
+          <div class="request-meta">Carga: ${req.workload || "—"}</div>
+          ${obs}
+        </div>
+        <div class="request-status">
+          ${badgeHtml}
+        </div>
+        <div class="request-actions">
+          <button type="button" class="btn-ghost btn-sm js-view">Detalhes</button>
+          ${
+            canCancel
+              ? '<button type="button" class="btn-ghost btn-sm js-cancel">Cancelar</button>'
+              : ""
+          }
+          ${
+            canRemove
+              ? '<button type="button" class="btn-ghost btn-sm js-remove">Remover</button>'
+              : ""
+          }
+        </div>
+      </article>
+    `;
+    })
+    .join("");
+
+  listEl.innerHTML = html;
+
+  // Ligações de eventos para cada card
+  $$("#requestList .request-card").forEach((card) => {
+    const id = card.getAttribute("data-id");
+    const req = state.requests.find((r) => r.id === id);
+    if (!req) return;
+
+    const btnView = card.querySelector(".js-view");
+    const btnCancel = card.querySelector(".js-cancel");
+    const btnRemove = card.querySelector(".js-remove");
+
+    if (btnView) {
+      btnView.addEventListener("click", () => {
+        const body = `
+          <p><strong>Data:</strong> ${fmtDateBR(req.date)}</p>
+          <p><strong>Período:</strong> ${req.period}</p>
+          <p><strong>Região de Preferência:</strong> ${req.prefer}</p>
+          <p><strong>Carga horária:</strong> ${req.workload}</p>
+          <p><strong>Status:</strong> ${statusLabel(req.status)}</p>
+          ${
+            req.feedback
+              ? `<p><strong>Feedback chefia:</strong> ${req.feedback}</p>`
+              : ""
+          }
+          ${
+            req.obs
+              ? `<p><strong>Observações:</strong> ${req.obs}</p>`
+              : ""
+          }
+        `;
+        openModal("Detalhes da disponibilidade", body);
+      });
+    }
+
+    if (btnCancel) {
+      btnCancel.addEventListener("click", () => {
+        if (!confirm("Confirmar cancelamento desta disponibilidade?")) return;
+        req.status = "canceled";
+        req.feedback = "Cancelado pelo próprio servidor.";
+        state.alerts.unshift({
+          id: `alert-${Date.now()}`,
+          title: "Disponibilidade cancelada",
+          description: `${fmtDateBR(req.date)} • ${req.period} • ${req.prefer}`,
+          createdAt: new Date().toISOString(),
+        });
+        updateBell();
+        saveToStorage();
+        renderRequests();
+        renderAgendaStrip();
+        showToast("Disponibilidade cancelada.");
+      });
+    }
+
+    if (btnRemove) {
+      btnRemove.addEventListener("click", () => {
+        if (!confirm("Remover definitivamente esta disponibilidade da lista?")) return;
+        state.requests = state.requests.filter((r) => r.id !== id);
+        saveToStorage();
+        renderRequests();
+        renderAgendaStrip();
+        showToast("Registro removido.");
+      });
+    }
+  });
+}
+
+// --- Agenda strip (resumo por data) ----------------------------------------
+
+function renderAgendaStrip() {
+  const wrapper = $("#agendaStrip");
+  if (!wrapper) return;
+
+  if (!state.requests.length) {
+    wrapper.innerHTML = '<span class="muted" style="font-size:12px;">Sem registros para exibir.</span>';
+    return;
+  }
+
+  // Agrupa por data
+  const grouped = {};
+  state.requests.forEach((r) => {
+    if (!grouped[r.date]) grouped[r.date] = [];
+    grouped[r.date].push(r);
+  });
+
+  const dates = Object.keys(grouped).sort();
+  const html = dates
+    .slice(0, 12)
+    .map((date) => {
+      const items = grouped[date];
+      const total = items.length;
+      const approved = items.filter((x) => x.status === "approved").length;
+      const pending = items.filter((x) => x.status === "pending").length;
+
+      return `
+      <div class="agenda-chip">
+        <strong>${fmtDateBR(date)}</strong>
+        <span>${total} registro(s)</span><br/>
+        <span>Pend: ${pending} • Aprov: ${approved}</span>
+      </div>
+    `;
+    })
+    .join("");
+
+  wrapper.innerHTML = html;
+}
+
+// --- Alerts / Bell ---------------------------------------------------------
+
+function updateBell() {
+  const bell = $("#bellCount");
+  if (!bell) return;
+  const total = state.alerts.length;
+  bell.textContent = total;
+}
+
+function setupBell() {
+  $("#btnBell").addEventListener("click", () => {
+    if (!state.alerts.length) {
+      openModal("Alertas", "<p>Nenhum alerta recente.</p>");
+      return;
+    }
+
+    const html = state.alerts
+      .map(
+        (a) => `
+        <div style="padding:8px 0;border-bottom:1px solid rgba(148,163,184,.35);">
+          <div style="font-weight:600;font-size:13px;">${a.title}</div>
+          <div style="font-size:12px;opacity:.8;margin-top:3px;">${a.description}</div>
+        </div>
+      `
+      )
+      .join("");
+
+    openModal("Alertas recentes", html);
+  });
+}
+
+// --- Formulário -------------------------------------------------------------
+
+function generateId() {
+  return `req-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+function setupForm() {
+  const form = $("#requestForm");
+  const btnClear = $("#btnClear");
+  if (!form) return;
+
+  btnClear.addEventListener("click", () => {
+    form.reset();
+  });
+
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const date = $("#date").value;
     const period = $("#period").value;
+    const prefer = $("#prefer").value;
     const workload = $("#workload").value;
-    const note = $("#note").value.trim();
+    const obs = $("#obs").value.trim();
 
-
-    if (!date || !period || !workload) {
-      toast("Preencha data, período e carga horária.");
+    if (!date || !period || !prefer || !workload) {
+      showToast("Preencha todos os campos obrigatórios.");
       return;
     }
 
-    state.requests.unshift({    
-  id: crypto.randomUUID(),
-  date,
-  period,
-  workload,
-  place: "",                 // local será definido pelo admin
-  placeDefined: false,        // marca que ainda não foi definido
-  note,
-  status: "pending",
-  feedback: ""
-    });
+    const req = {
+      id: generateId(),
+      date,
+      period,
+      prefer,
+      workload,
+      obs,
+      status: "pending",
+      feedback: "",
+      createdAt: new Date().toISOString(),
+    };
 
-    $("#availabilityForm").reset();
-    toast("Disponibilidade registrada (pendente).");
-    addAlert("Disponibilidade enviada", `${fmtDateBR(date)} • ${period} • Local: a definir`);
-    
-    rerenderAll();
-
+    state.requests.push(req);
+    saveToStorage();
+    renderRequests();
+    renderAgendaStrip();
+    form.reset();
+    showToast("Disponibilidade enviada para análise.");
   });
-
-  // 🔁 CONTROLES DO CALENDÁRIO (CORRETO)
-$("#calPrev").addEventListener("click", () => {
-  calMonth--;
-  if (calMonth < 0) {
-    calMonth = 11;
-    calYear--;
-  }
-  renderCalendar();
-});
-
-$("#calNext").addEventListener("click", () => {
-  calMonth++;
-  if (calMonth > 11) {
-    calMonth = 0;
-    calYear++;
-  }
-  renderCalendar();
-});
-
-
-  // exemplo
-  $("#btnFillExample").addEventListener("click", () => {
-    const d = new Date();
-    d.setDate(d.getDate() + 2);
-    $("#date").value = d.toISOString().slice(0,10);
-    $("#period").value = "Noite";
-    $("#note").value = "Disponível após 18h.";
-    toast("Exemplo preenchido.");
-  });
-
-  // simular aprovação
-  $("#btnSimApprove").addEventListener("click", () => {
-    const r = pickFirstPending();
-    if (!r) return toast("Não há pendentes para aprovar.");
-    r.status = "approved";
-    r.feedback = "Aprovado pelo administrador (mock).";
-    toast("Aprovado (mock).");
-    addAlert("DEAC aprovado", `${fmtDateBR(r.date)} • ${r.period} • ${r.place}`);
-    rerenderAll();
-  });
-
-  // simular recusa
-  $("#btnSimReject").addEventListener("click", () => {
-    const r = pickFirstPending();
-    if (!r) return toast("Não há pendentes para recusar.");
-    r.status = "rejected";
-    r.feedback = "Recusado pelo administrador (mock).";
-    toast("Recusado (mock).");
-    addAlert("DEAC recusado", `${fmtDateBR(r.date)} • ${r.period} • ${r.place}`);
-    rerenderAll();
-  });
-
-  // limpar alertas
-  $("#btnClearAlerts").addEventListener("click", () => {
-    state.alerts = [];
-    renderAlerts();
-    updateBell();
-    toast("Alertas limpos.");
-  });
-
-  // sino (modal)
-  $("#btnBell").addEventListener("click", () => {
-    if (!state.alerts.length) return toast("Sem alertas.");
-    const html = state.alerts.slice(0, 12).map(a => `
-      <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.10);">
-        <div style="font-weight:900;">${a.title}</div>
-        <div style="opacity:.78;margin-top:4px;">${a.subtitle}</div>
-      </div>
-    `).join("");
-    openModal("Alertas", html);
-  });
-
-  // modal close
-  $("#modalClose").addEventListener("click", closeModal);
-  $("#modalOk").addEventListener("click", closeModal);
-  $("#modalBackdrop").addEventListener("click", (e) => {
-    if (e.target === $("#modalBackdrop")) closeModal();
-  });
-
-  // logout (front-only)
-  $("#btnLogout").addEventListener("click", () => {
-    toast("Saindo (front-only)…");
-    setTimeout(() => (window.location.href = "login.html"), 600);
-  });
-
-  // tabs
-document.querySelectorAll(".tab").forEach(btn => {
-  btn.addEventListener("click", () => setView(btn.dataset.target));
-});
-
-// view inicial
-setView("register");
-
-
-  rerenderAll();
-  renderAlerts();
-  updateBell();
-  renderCalendar();
 }
 
-init();
+// --- Filtro por status ------------------------------------------------------
 
-function setView(viewName) {
-  // ativa botão
-  document.querySelectorAll(".tab").forEach(b => {
-    b.classList.toggle("active", b.dataset.target === viewName);
+function setupFilter() {
+  const container = $("#statusFilter");
+  if (!container) return;
+
+  container.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-filter]");
+    if (!btn) return;
+
+    const filter = btn.dataset.filter;
+    state.filter = filter;
+
+    $$("#statusFilter .pill").forEach((el) => el.classList.remove("active"));
+    btn.classList.add("active");
+
+    renderRequests();
   });
-
-  // mostra seção certa
-  document.querySelectorAll(".view").forEach(v => {
-    v.classList.toggle("active", v.dataset.view === viewName);
-  });
-
-  if (viewName === "agenda") {
-    renderCalendar();
-  }
 }
 
-function toISODate(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
+// --- Navegação de abas (sidebar) -------------------------------------------
 
-function monthTitle(year, month) {
-  const dt = new Date(year, month, 1);
-  return dt.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-}
+function setupSidebarNav() {
+  $$(".nav-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      $$(".nav-item").forEach((b) => b.classList.remove("nav-item-active"));
+      btn.classList.add("nav-item-active");
 
-function getApprovedDatesSet() {
-  const set = new Set();
-  state.requests
-    .filter(r => r.status === "approved" && r.place) // só os confirmados
-    .forEach(r => set.add(r.date));                  // r.date já é YYYY-MM-DD
-  return set;
-}
-
-function renderCalendar() {
-  const grid = $("#calGrid");
-  if (!grid) return; // se não existir no HTML, não quebra
-
-  $("#calTitle").textContent = monthTitle(calYear, calMonth);
-  grid.innerHTML = "";
-
-  const firstDay = new Date(calYear, calMonth, 1);
-  const startWeekday = firstDay.getDay(); // 0=Dom
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-
-  const approvedSet = getApprovedDatesSet();
-
-  // espaços vazios antes do 1º dia
-  for (let i = 0; i < startWeekday; i++) {
-    const empty = document.createElement("div");
-    empty.className = "cal-day muted";
-    empty.style.visibility = "hidden";
-    grid.appendChild(empty);
-  }
-
-  // dias do mês
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dt = new Date(calYear, calMonth, day);
-    const iso = toISODate(dt);
-
-    const cell = document.createElement("div");
-    cell.className = "cal-day";
-    if (approvedSet.has(iso)) cell.classList.add("has-event");
-
-    cell.innerHTML = `<div class="n">${day}</div>`;
-
-    cell.addEventListener("click", () => {
-      const items = state.requests.filter(r =>
-        r.status === "approved" && r.place && r.date === iso
-      );
-
-      if (!items.length) {
-        toast("Sem DEAC nesse dia.");
-        return;
+      const view = btn.dataset.view;
+      if (view === "agenda") {
+        openAgendaModal();
+      } else if (view === "config") {
+        openConfigModal();
       }
-
-      const html = items.map(r => `
-        <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.10);">
-          <div style="font-weight:900;">${fmtDateBR(r.date)} • ${r.period}</div>
-          <div style="opacity:.80;margin-top:4px;">Carga: ${r.workload || "—"} • Local: ${r.place}</div>
-        </div>
-      `).join("");
-
-      openModal("Agenda DEAC", html);
     });
-
-    grid.appendChild(cell);
-  }
+  });
 }
+
+function openAgendaModal() {
+  if (!state.requests.length) {
+    openModal("Agenda mensal", "<p>Sem registros para montar a agenda.</p>");
+    return;
+  }
+
+  // Organiza por data
+  const grouped = {};
+  state.requests.forEach((r) => {
+    if (!grouped[r.date]) grouped[r.date] = [];
+    grouped[r.date].push(r);
+  });
+
+  const dates = Object.keys(grouped).sort();
+
+  const html = dates
+    .map((date) => {
+      const items = grouped[date]
+        .sort(sortByDate)
+        .map(
+          (r) => `
+          <tr>
+            <td>${r.period}</td>
+            <td>${r.prefer}</td>
+            <td>${r.workload}</td>
+            <td>${statusLabel(r.status)}</td>
+          </tr>
+        `
+        )
+        .join("");
+
+      return `
+      <h3 style="margin:12px 0 6px;font-size:13px;">${fmtDateBR(date)}</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px;">
+        <thead>
+          <tr style="text-align:left;">
+            <th style="padding:4px 0;">Período</th>
+            <th style="padding:4px 0;">Carga</th>
+            <th style="padding:4px 0;">Local</th>
+            <th style="padding:4px 0;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items}
+        </tbody>
+      </table>
+      `;
+    })
+    .join("");
+
+  openModal("Agenda mensal DEAC", html);
+}
+
+function openConfigModal() {
+  const html = `
+    <p style="margin-top:0;">Este painel é apenas uma simulação local para organização das suas disponibilidades.</p>
+    <p style="font-size:12px;opacity:.8;">
+      Os dados são salvos apenas neste navegador utilizando <code>localStorage</code>. 
+      Você pode limpar tudo usando o botão abaixo.
+    </p>
+    <button id="btnWipeData" class="btn-primary" style="margin-top:8px;">Limpar dados salvos</button>
+  `;
+
+  openModal("Configurações do painel", html);
+
+  setTimeout(() => {
+    const btn = $("#btnWipeData");
+    if (btn) {
+      btn.addEventListener("click", () => {
+        if (!confirm("Tem certeza que deseja limpar todos os registros locais?")) return;
+        state.requests = [];
+        saveToStorage();
+        renderRequests();
+        renderAgendaStrip();
+        showToast("Todos os dados locais foram apagados.");
+        closeModal();
+      });
+    }
+  }, 30);
+}
+
+// --- Inicialização ----------------------------------------------------------
+
+function seedIfEmpty() {
+  if (state.requests.length) return;
+
+  const today = new Date();
+  const d1 = toISODate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1));
+  const d2 = toISODate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3));
+  const d3 = toISODate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7));
+
+  state.requests = [
+    {
+      id: generateId(),
+      date: d1,
+      period: "Noite",
+      prefer: "Centro",
+      workload: "8h",
+      obs: "Preferência por dupla com equipe da Base Centro.",
+      status: "pending",
+      feedback: "",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: generateId(),
+      date: d2,
+      period: "Tarde",
+      prefer: "Zona Sul",
+      workload: "6h",
+      obs: "",
+      status: "approved",
+      feedback: "Escala confirmada pela chefia.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: generateId(),
+      date: d3,
+      period: "Manhã",
+      prefer: "Norte",
+      workload: "8h",
+      obs: "Pode chegar 30 minutos antes.",
+      status: "rejected",
+      feedback: "Necessidade de efetivo em outra data.",
+      createdAt: new Date().toISOString(),
+    },
+  ];
+}
+
+function init() {
+  // Nome do usuário
+  const userNameEl = $("#userName");
+  if (userNameEl) userNameEl.textContent = state.user.name;
+
+  // Hoje
+  const todayEl = $("#todayLabel");
+  if (todayEl) todayEl.textContent = fmtTodayLabel();
+
+  // Storage
+  loadFromStorage();
+  if (!state.requests.length) seedIfEmpty();
+
+  // Monta UI
+  setupModalEvents();
+  setupForm();
+  setupFilter();
+  setupSidebarNav();
+  setupBell();
+
+  renderRequests();
+  renderAgendaStrip();
+  updateBell();
+}
+
+document.addEventListener("DOMContentLoaded", init);
