@@ -27,6 +27,9 @@ body{
   font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   min-height: 100vh;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* Fundo mais “premium” e menos estourado */
   background:
@@ -209,7 +212,59 @@ input:focus{
 }
 
 /* Responsivo */
+@media (max-width: 680px){
+  body{
+    align-items: stretch;
+  }
+
+  .wrap{
+    padding: 20px 14px 28px;
+  }
+
+  .card{
+    width: 100%;
+    border-radius: 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  }
+
+  .card > *{
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .brand{
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .brand-logo{
+    width: 68px;
+    height: 68px;
+  }
+
+  .brand-title{
+    font-size: 18px;
+  }
+
+  .brand-subtitle{
+    letter-spacing: 2.6px;
+  }
+
+  input{
+    height: 46px;
+    border-radius: 16px;
+    font-size: 15px;
+  }
+
+  .btn{
+    height: 48px;
+    font-size: 15px;
+    letter-spacing: .3px;
+  }
+}
+
 @media (max-width: 380px){
-  .brand-logo{ width: 64px; height: 64px; }
-  .brand-title{ font-size: 18px; }
+  .brand-logo{ width: 62px; height: 62px; }
+  .brand-title{ font-size: 17px; }
 }
