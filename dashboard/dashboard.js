@@ -658,6 +658,64 @@ function getAgendaStatusMap() {
   }, {});
 }
 
+function buildAgendaTooltip(records) {
+  if (!records.length) return "";
+
+  const sections = records
+    .map((record) => {
+      const status = record.status;
+      const title = statusLabel(status);
+      const dateLine = `<div class="tooltip-line"><strong>Data:</strong> ${fmtDateBR(
+        record.date
+      )}</div>`;
+      const periodLine = `<div class="tooltip-line"><strong>Período:</strong> ${record.period}</div>`;
+      const workloadLine = `<div class="tooltip-line"><strong>Carga horária:</strong> ${record.workload}</div>`;
+
+      if (status === "pending") {
+        const preferLine = `<div class="tooltip-line"><strong>Região de preferência:</strong> ${record.prefer}</div>`;
+        const obsValue = record.obs ? record.obs : "Sem observações";
+        const obsLine = `<div class="tooltip-line"><strong>Observações:</strong> ${obsValue}</div>`;
+        return `
+          <div class="calendar-tooltip-section">
+            <div class="tooltip-title">${title}</div>
+            ${dateLine}
+            ${periodLine}
+            ${preferLine}
+            ${workloadLine}
+            ${obsLine}
+          </div>
+        `;
+      }
+
+      if (status === "approved") {
+        const localLine = `<div class="tooltip-line"><strong>Local:</strong> —</div>`;
+        const timeLine = `<div class="tooltip-line"><strong>Horário:</strong> —</div>`;
+        return `
+          <div class="calendar-tooltip-section">
+            <div class="tooltip-title">${title}</div>
+            ${dateLine}
+            ${periodLine}
+            ${localLine}
+            ${workloadLine}
+            ${timeLine}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="calendar-tooltip-section">
+          <div class="tooltip-title">${title}</div>
+          ${dateLine}
+          ${periodLine}
+          ${workloadLine}
+        </div>
+      `;
+    })
+    .join('<div class="tooltip-divider"></div>');
+
+  return `<div class="calendar-tooltip">${sections}</div>`;
+}
+
 function renderAgendaCalendarModal() {
   const viewDate = state.agendaCursor || new Date();
   const year = viewDate.getFullYear();
@@ -669,6 +727,11 @@ function renderAgendaCalendarModal() {
   const startWeekday = firstDay.getDay();
 
   const statusMap = getAgendaStatusMap();
+  const recordsByDate = state.requests.reduce((acc, req) => {
+    if (!acc[req.date]) acc[req.date] = [];
+    acc[req.date].push(req);
+    return acc;
+  }, {});
   const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
   const hasMonthRecords = state.requests.some((req) => req.date.startsWith(monthPrefix));
 
@@ -680,16 +743,26 @@ function renderAgendaCalendarModal() {
   }
 
   for (let day = 1; day <= totalDays; day += 1) {
-    const iso = toISODate(new Date(year, month, day));
-    const status = statusMap[iso];
-    const statusClass = status ? `status-${status}` : "";
-    const title = status ? statusLabel(status) : "Sem registro";
-    cells.push(
-      `<button type="button" class="calendar-day ${statusClass}" data-date="${iso}" title="${title}">
-        <span>${day}</span>
-      </button>`
-    );
-  }
+  const iso = toISODate(new Date(year, month, day));
+  const status = statusMap[iso];
+  const statusClass = status ? `status-${status}` : "";
+  const title = status ? statusLabel(status) : "Sem registro";
+  const tooltip = status ? buildAgendaTooltip(recordsByDate[iso] || []) : "";
+
+  // índice da coluna (0 = domingo, 6 = sábado)
+  const colIndex = (startWeekday + (day - 1)) % 7;
+
+  // marca sexta (5) e sábado (6) como "borda direita"
+  const edgeClass = colIndex >= 5 ? " calendar-day--edge-right" : "";
+
+  cells.push(
+    `<button type="button" class="calendar-day ${statusClass}${edgeClass}" data-date="${iso}" title="${title}">
+      <span>${day}</span>
+      ${tooltip}
+    </button>`
+  );
+}
+
 
   const html = `
     <div class="agenda-calendar">
