@@ -3,225 +3,196 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GCM Guarulhos - DEAC • Dashboard</title>
+  <title>GCM Guarulhos • DEAC – Dashboard</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="dashboard.css">
+  <!-- Estilos -->
+  <link rel="stylesheet" href="dashboard.css" />
 </head>
-<body>
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="brand">
-        <img class="brand-logo" src="logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" />
+<body class="app-body">
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <img src="logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" class="brand-logo" />
         <div class="brand-text">
-          <div class="brand-title">GCM Guarulhos</div>
-          <div class="brand-subtitle">DEAC</div>
+          <span class="brand-title">GCM Guarulhos</span>
+          <span class="brand-subtitle">DEAC • Dashboard</span>
         </div>
       </div>
-    </div>
 
-    <div class="topbar-right">
-      <button class="icon-btn" id="btnBell" title="Alertas">
-        🔔 <span class="pill" id="bellCount">0</span>
-      </button>
+      <nav class="sidebar-nav">
+        <button class="nav-item nav-item-active" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Painel</span>
+        </button>
+        <button class="nav-item" data-view="agenda">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Agenda</span>
+        </button>
+        <button class="nav-item" data-view="config">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Configurações</span>
+        </button>
+      </nav>
 
-      <div class="userbox">
-        <div class="user-name" id="userName">GCM • Usuário</div>
-        <div class="user-role">Uso interno</div>
-      </div>
-
-      <button class="btn-secondary" id="btnLogout">Sair</button>
-    </div>
-  </header>
-
-  <main class="container">
-
-    <!-- KPI -->
-    <section class="kpis">
-      <div class="kpi">
-        <div class="kpi-label">Pendentes</div>
-        <div class="kpi-value" id="kpiPending">0</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Aprovadas</div>
-        <div class="kpi-value" id="kpiApproved">0</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Recusadas</div>
-        <div class="kpi-value" id="kpiRejected">0</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Agendadas (7 dias)</div>
-        <div class="kpi-value" id="kpiUpcoming">0</div>
-      </div>
-    </section>
-
-    <nav class="tabs" aria-label="Menu principal">
-      <button class="tab active" data-target="register">Registrar disponibilidade</button>
-      <button class="tab" data-target="requests">Minhas solicitações</button>
-      <button class="tab" data-target="agenda">Agenda</button>
-      <button class="tab" data-target="alerts">Alertas</button>
-    </nav>
-
-
-    <section class="grid">
-
-      <!-- FORM REGISTRO -->
-      <article class="card view" id="view-register" data-view="register">
-        <div class="card-head">
-          <h2>Registrar disponibilidade</h2>
-          <span class="hint">Front-only (mock). Cancelamento permitido apenas em “Pendente”.</span>
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">G</div>
+          <div class="user-meta">
+            <span class="user-name" id="userName">GCM • Guilherme</span>
+            <span class="user-role">Operador DEAC</span>
+          </div>
         </div>
-
-        <form id="availabilityForm" class="form" autocomplete="on">
-                  
-          <div class="row row-compact">
-            <div class="field">
-              <label for="date">Data</label>
-              <input id="date" type="date" required />
-            </div>
-
-            <div class="field">
-              <label for="period">Período</label>
-              <select id="period" required>
-                <option value="" selected disabled>Selecione…</option>
-                <option>Manhã</option>
-                <option>Tarde</option>
-                <option>Noite</option>
-                <option>Madrugada</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row row-compact row-single">
-            <div class="field">
-              <label for="workload">Carga Horária</label>
-              <select id="workload" required>
-                <option value="" selected disabled>Selecione…</option>
-                <option value="06h">06h</option>
-                <option value="08h">08h</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="field">
-              <label for="note">Observação (opcional)</label>
-              <input id="note" type="text" placeholder="Ex.: disponível após 18h..." />
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="btn" type="submit">Registrar</button>
-            <button class="btn-ghost" type="button" id="btnFillExample">Exemplo</button>
-          </div>
-        </form>
-      </article>
-      
-         <!-- TABELA SOLICITAÇÕES -->
-<article class="card view" id="view-requests" data-view="requests">
-  <div class="card-head split">
-    <h2>Minhas solicitações</h2>
-
-    <div class="filters">
-      <button class="chip active" data-filter="all">Todas</button>
-      <button class="chip" data-filter="pending">Pendentes</button>
-      <button class="chip" data-filter="approved">Aprovadas</button>
-      <button class="chip" data-filter="rejected">Recusadas</button>
-      <button class="chip" data-filter="canceled">Canceladas</button>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table class="table" aria-label="Solicitações">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Período</th>
-          <th>Local</th>
-          <th>Status</th>
-          <th class="th-actions">Ações</th>
-        </tr>
-      </thead>
-      <tbody id="requestsTbody"></tbody>
-    </table>
-
-    <div class="empty" id="requestsEmpty">
-      <div class="empty-title">Nenhuma solicitação ainda</div>
-      <div class="empty-sub">Registre sua disponibilidade no card ao lado.</div>
-    </div>
-
-    <div class="actions-inline">
-      <button class="btn-ghost" id="btnSimApprove">Simular Aprovação</button>
-      <button class="btn-ghost" id="btnSimReject">Simular Recusa</button>
-    </div>
-  </div>
-</article>
-
-<!-- AGENDA -->
-<article class="card view" id="view-agenda" data-view="agenda">
-  <div class="card-head">
-    <h2>Agenda • próximos 7 dias</h2>
-    <span class="hint">Mostra apenas aprovações confirmadas (mock).</span>
-  </div>
-
-
-    <div class="cal">
-      <div class="cal-head">
-        <button class="btn-ghost" id="calPrev">◀</button>
-        <div class="cal-title" id="calTitle">Mês</div>
-        <button class="btn-ghost" id="calNext">▶</button>
       </div>
+    </aside>
 
-      <div class="cal-weekdays">
-        <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
-      </div>
+    <!-- MAIN -->
+    <main class="app-main">
+      <!-- HEADER -->
+      <header class="app-header">
+        <div class="header-left">
+          <h1 class="header-title">Escala de Disponibilidade</h1>
+          <p class="header-subtitle">Registre suas disponibilidades para DEAC e acompanhe pelo painel.</p>
+        </div>
+        <div class="header-right">
+          <button class="icon-button" id="btnBell" title="Alertas">
+            🔔 <span class="icon-badge" id="bellCount">0</span>
+          </button>
+          <div class="header-date">
+            <span id="todayLabel"></span>
+          </div>
+        </div>
+      </header>
 
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
+          <!-- CONTENT LAYOUT -->
+      <section class="app-layout">
+        <!-- COL ESQUERDA: FORM -->
+        <section class="card form-card">
+          <header class="card-header">
+            <div>
+              <h2 class="card-title">Nova Disponibilidade</h2>
+              <p class="card-subtitle">Preencha os dados abaixo para enviar uma nova disponibilidade de serviço.</p>
+            </div>
+          </header>
 
-  <div class="agenda" id="agendaList"></div>
+          <form id="requestForm" class="card-body grid-form">
+            <div class="form-row">
+              <!--Data-->
+              <div class="field">
+                <label for="date">Data</label>
+                <input type="date" id="date" required />
+              </div>
+              <!--Período-->
+              <div class="field">
+                <label for="period">Período</label>
+                <select id="period" required>
+                  <option value="">Selecione</option>
+                  <option>Manhã</option>
+                  <option>Tarde</option>
+                  <option>Noite</option>
+                  <option>Madrugada</option>
+                </select>
+              </div>
+            </div>            
+            <!--Carga Horária-->
+            <div class="form-row">
+              <div class="field">
+                <label for="workload">Carga Horária</label>
+                <select id="workload" required>
+                  <option value="">Selecione</option>
+                  <option>6h</option>
+                  <option>8h</option>
+                  <option>12h</option>
+                </select>
+              </div>
+              <!--Região de Preferência-->  
+              <div class="field">
+                <label for="prefer">Região de Preferência</label>
+                <select id="prefer" required>
+                  <option value="">Selecione</option>
+                  <option>Centro</option>
+                  <option>Leste</option>
+                  <option>Oeste</option>
+                  <option>Norte</option>
+                  <option>Sul</option>
+                  <option>Sem preferência</option>
+                </select>
+              </div>
+            </div>
+            <!--Observações-->
+            <div class="form-row">
+              <div class="field full">
+                <label for="obs">Observações</label>
+                <textarea id="obs" rows="3" placeholder="Informações adicionais, restrições, preferências..."></textarea>
+              </div>
+            </div>
 
-  <div class="empty" id="agendaEmpty">
-    <div class="empty-title">Sem agendamentos confirmados</div>
-    <div class="empty-sub">Quando aprovar, aparece aqui.</div>
+            <footer class="form-footer">
+              <div class="form-footer-left">
+                <span class="form-hint">Os dados podem ser ajustados pela chefia antes da aprovação.</span>
+              </div>
+              <div class="form-footer-right">
+                <button type="button" class="btn-ghost" id="btnClear">Limpar</button>
+                <button type="submit" class="btn-primary">Enviar Disponibilidade</button>
+              </div>
+            </footer>
+          </form>
+        </section>
+
+        <!-- COL DIREITA: LISTAGEM + AGENDA -->
+        <section class="card list-card">
+          <header class="card-header">
+            <div>
+              <h2 class="card-title">Minhas Disponibilidades</h2>
+              <p class="card-subtitle">Acompanhe o status das suas solicitações.</p>
+            </div>
+
+            <div class="pill-switch" id="statusFilter">
+              <button type="button" class="pill active" data-filter="all">Todas</button>
+              <button type="button" class="pill" data-filter="pending">Pendentes</button>
+              <button type="button" class="pill" data-filter="approved">Aprovadas</button>
+              <button type="button" class="pill" data-filter="rejected">Recusadas</button>
+              <button type="button" class="pill" data-filter="canceled">Canceladas</button>
+            </div>
+          </header>
+
+          <section class="card-body">
+            <div class="list-empty" id="listEmpty">
+              <p>Nenhuma disponibilidade cadastrada ainda.</p>
+              <p class="muted">Envie sua primeira disponibilidade pelo formulário ao lado.</p>
+            </div>
+
+            <div class="request-list" id="requestList"></div>
+          </section>
+
+          <footer class="card-footer agenda-footer">
+            <div class="agenda-header">
+              <h3 class="agenda-title">Agenda rápida</h3>
+              <button class="btn-soft" id="btnOpenAgenda">Abrir agenda mensal</button>
+            </div>
+            <div class="agenda-strip" id="agendaStrip"></div>
+          </footer>
+        </section>
+      </section>
+    </main>
   </div>
-</article>
-
-      <!-- ALERTAS -->
-      <article class="card view" id="view-alerts" data-view="alerts">
-        <div class="card-head split">
-          <h2>Alertas</h2>
-          <button class="btn-ghost" id="btnClearAlerts">Limpar</button>
-        </div>
-
-        <div class="alerts" id="alertsList"></div>
-
-        <div class="empty" id="alertsEmpty">
-          <div class="empty-title">Sem alertas</div>
-          <div class="empty-sub">Aprovação/recusa/cancelamento geram alertas.</div>
-        </div>
-      </article>
-
-    </section>
-  </main>
 
   <!-- MODAL -->
-  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head">
-        <div class="modal-title" id="modalTitle">Detalhes</div>
-        <button class="icon-btn" id="modalClose" title="Fechar">✕</button>
-      </div>
-      <div class="modal-body" id="modalBody"></div>
-      <div class="modal-foot">
-        <button class="btn-secondary" id="modalOk">Ok</button>
-      </div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal">
+      <header class="modal-header">
+        <h2 id="modalTitle"></h2>
+        <button class="modal-close" id="modalClose" aria-label="Fechar">✕</button>
+      </header>
+      <section class="modal-body" id="modalBody"></section>
+      <footer class="modal-footer">
+        <button class="btn-primary" id="modalOk">Ok</button>
+      </footer>
     </div>
   </div>
 
