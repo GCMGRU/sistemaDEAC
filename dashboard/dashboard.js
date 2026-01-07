@@ -1,17 +1,44 @@
-// Utilitários rápidos
+// ============================================================================
+// Helpers de DOM
+// ============================================================================
+
+/**
+ * Atalho para document.querySelector.
+ * Uso: $('#meuId'), $('.minha-classe')
+ */
 const $ = (sel) => document.querySelector(sel);
+
+/**
+ * Atalho para document.querySelectorAll retornando array.
+ * Uso: $$('.minha-classe').forEach(...)
+ */
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-// Estado principal da aplicação
+
+// ============================================================================
+// Estado global da aplicação (camada de apresentação)
+// ============================================================================
+
+/**
+ * Estado mantido apenas no front-end.
+ * Em produção, os dados viriam do backend (PHP + banco).
+ */
 const state = {
   filter: "all",
   user: { name: "GCM • Guilherme" },
   requests: [],
   alerts: [],
+  agendaCursor: null,
 };
 
-// --- Helpers de data -------------------------------------------------------
 
+// ============================================================================
+// Utilitários de data
+// ============================================================================
+
+/**
+ * Converte um objeto Date ou string em formato ISO (YYYY-MM-DD).
+ */
 function toISODate(date) {
   if (typeof date === "string") return date;
   const y = date.getFullYear();
@@ -20,35 +47,61 @@ function toISODate(date) {
   return `${y}-${m}-${d}`;
 }
 
+/**
+ * Formata uma data ISO (YYYY-MM-DD) para o padrão brasileiro (DD/MM/YYYY).
+ */
 function fmtDateBR(iso) {
   if (!iso) return "";
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
 
+/**
+ * Gera o rótulo de data exibido no cabeçalho (hoje).
+ */
 function fmtTodayLabel() {
   const now = new Date();
   const opts = { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" };
   return now.toLocaleDateString("pt-BR", opts).replace(",", "");
 }
 
-// --- Persistência simples ---------------------------------------------------
+function fmtMonthYear(date) {
+  const label = date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
 
+function addMonths(date, diff) {
+  return new Date(date.getFullYear(), date.getMonth() + diff, 1);
+}
+
+// ============================================================================
+// Persistência local (storage) – hoje localStorage, amanhã backend
+// ============================================================================
+
+/**
+ * Chave utilizada no localStorage para armazenar as disponibilidades.
+ */
 const STORAGE_KEY = "deac-dashboard-requests-v1";
 
+/**
+ * Lê o array de disponibilidades a partir do localStorage.
+ * Em caso de erro, retorna um array vazio.
+ */
 function loadFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      state.requests = parsed;
-    }
+    return Array.isArray(parsed) ? parsed : [];
   } catch (err) {
     console.warn("Erro ao carregar storage:", err);
+    return [];
   }
 }
 
+/**
+ * Persiste o estado atual de `state.requests` no localStorage.
+ */
 function saveToStorage() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.requests));
@@ -57,23 +110,124 @@ function saveToStorage() {
   }
 }
 
-// --- Toast ------------------------------------------------------------------
+
+// ============================================================================
+// Camada de dados / API (pronto para integrar com PHP)
+// ============================================================================
+
+/**
+ * Camada de acesso a dados.
+ *
+ * Atual:
+ *  - usa `state.requests` + localStorage para simular o backend.
+ *
+ * Pós (PHP):
+ *  - basta trocar a implementação das funções por chamadas `fetch`
+ *    para endpoints PHP, ex:
+ *      listarDisponibilidades()  -> GET  /api/disponibilidades.php
+ *      criarDisponibilidade()    -> POST /api/disponibilidades.php
+ *      atualizarStatus()         -> PATCH/POST /api/disponibilidades.php?id=...
+ *      removerDisponibilidade()  -> DELETE /api/disponibilidades.php?id=...
+ */
+const api = {
+  /**
+   * Retorna a lista de disponibilidades.
+   * No futuro, aqui será o GET para o backend PHP.
+   */
+  async listarDisponibilidades() {
+    const stored = loadFromStorage();
+    if (stored.length) {
+      state.requests = stored;
+    }
+    return state.requests;
+  },
+
+  /**
+   * Cria uma nova disponibilidade.
+   * @param {Object} payload - Dados da nova disponibilidade.
+   */
+  async criarDisponibilidade(payload) {
+    state.requests.push(payload);
+    saveToStorage();
+    return payload;
+
+    // Exemplo para futuro PHP:
+    // const resp = await fetch('/api/disponibilidades.php', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(payload),
+    // });
+    // const data = await resp.json();
+    // state.requests.push(data);
+    // return data;
+  },
+
+  /**
+   * Atualiza o status de uma disponibilidade (ex.: cancelar).
+   * @param {string} id - ID da disponibilidade.
+   * @param {string} status - Novo status (pending, approved, canceled, etc).
+   * @param {string} [feedback] - Mensagem opcional de feedback da chefia.
+   */
+  async atualizarStatus(id, status, feedback = "") {
+    const req = state.requests.find((r) => r.id === id);
+    if (!req) return null;
+
+    req.status = status;
+    if (typeof feedback === "string" && feedback !== "") {
+      req.feedback = feedback;
+    }
+    saveToStorage();
+    return req;
+  },
+
+  /**
+   * Remove definitivamente um registro de disponibilidade.
+   * @param {string} id - ID da disponibilidade a ser removida.
+   */
+  async removerDisponibilidade(id) {
+    state.requests = state.requests.filter((r) => r.id !== id);
+    saveToStorage();
+  },
+
+  /**
+   * Remove todas as disponibilidades (apenas ambiente local).
+   */
+  async limparTodas() {
+    state.requests = [];
+    saveToStorage();
+  },
+};
+
+
+// ============================================================================
+// Toast de feedback visual
+// ============================================================================
 
 let toastTimer = null;
 
+/**
+ * Exibe uma mensagem temporária no componente de toast.
+ */
 function showToast(message) {
   const el = $("#toast");
   if (!el) return;
   el.textContent = message;
   el.classList.add("show");
+
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     el.classList.remove("show");
   }, 2800);
 }
 
-// --- Modal ------------------------------------------------------------------
 
+// ============================================================================
+// Modal genérico
+// ============================================================================
+
+/**
+ * Abre o modal padrão com título e conteúdo HTML.
+ */
 function openModal(title, html) {
   const backdrop = $("#modalBackdrop");
   if (!backdrop) return;
@@ -82,12 +236,20 @@ function openModal(title, html) {
   backdrop.hidden = false;
 }
 
+/**
+ * Fecha o modal padrão.
+ */
 function closeModal() {
   const backdrop = $("#modalBackdrop");
   if (!backdrop) return;
   backdrop.hidden = true;
+  const modal = document.querySelector(".modal");
+  if (modal) modal.classList.remove("modal-agenda");
 }
 
+/**
+ * Registra eventos de fechamento do modal (botões e clique no backdrop).
+ */
 function setupModalEvents() {
   $("#modalClose").addEventListener("click", closeModal);
   $("#modalOk").addEventListener("click", closeModal);
@@ -96,8 +258,14 @@ function setupModalEvents() {
   });
 }
 
-// --- Listagem de disponibilidades ------------------------------------------
 
+// ============================================================================
+// Listagem de disponibilidades (lista principal)
+// ============================================================================
+
+/**
+ * Retorna as disponibilidades filtradas pelo status selecionado.
+ */
 function getFilteredRequests() {
   if (state.filter === "all") return state.requests.slice().sort(sortByDate);
   return state.requests
@@ -105,11 +273,17 @@ function getFilteredRequests() {
     .sort(sortByDate);
 }
 
+/**
+ * Ordenação padrão: data, depois período.
+ */
 function sortByDate(a, b) {
   if (a.date === b.date) return a.period.localeCompare(b.period);
   return a.date.localeCompare(b.date);
 }
 
+/**
+ * Converte o código de status em um rótulo amigável.
+ */
 function statusLabel(status) {
   switch (status) {
     case "pending":
@@ -125,6 +299,9 @@ function statusLabel(status) {
   }
 }
 
+/**
+ * Renderiza a lista de disponibilidades na coluna da direita.
+ */
 function renderRequests() {
   const listEl = $("#requestList");
   const emptyEl = $("#listEmpty");
@@ -179,7 +356,7 @@ function renderRequests() {
 
   listEl.innerHTML = html;
 
-  // Ligações de eventos para cada card
+  // Liga eventos de ação de cada card
   $$("#requestList .request-card").forEach((card) => {
     const id = card.getAttribute("data-id");
     const req = state.requests.find((r) => r.id === id);
@@ -189,6 +366,7 @@ function renderRequests() {
     const btnCancel = card.querySelector(".js-cancel");
     const btnRemove = card.querySelector(".js-remove");
 
+    // Detalhes
     if (btnView) {
       btnView.addEventListener("click", () => {
         const body = `
@@ -212,30 +390,41 @@ function renderRequests() {
       });
     }
 
+    // Cancelar (apenas pendente)
     if (btnCancel) {
-      btnCancel.addEventListener("click", () => {
+      btnCancel.addEventListener("click", async () => {
         if (!confirm("Confirmar cancelamento desta disponibilidade?")) return;
-        req.status = "canceled";
-        req.feedback = "Cancelado pelo próprio servidor.";
+
+        const updated = await api.atualizarStatus(
+          id,
+          "canceled",
+          "Cancelado pelo próprio servidor."
+        );
+        if (!updated) {
+          showToast("Não foi possível atualizar o registro.");
+          return;
+        }
+
         state.alerts.unshift({
           id: `alert-${Date.now()}`,
           title: "Disponibilidade cancelada",
-          description: `${fmtDateBR(req.date)} • ${req.period} • ${req.prefer}`,
+          description: `${fmtDateBR(updated.date)} • ${updated.period} • ${updated.prefer}`,
           createdAt: new Date().toISOString(),
         });
+
         updateBell();
-        saveToStorage();
         renderRequests();
         renderAgendaStrip();
         showToast("Disponibilidade cancelada.");
       });
     }
 
+    // Remover (apenas cancelada ou recusada)
     if (btnRemove) {
-      btnRemove.addEventListener("click", () => {
+      btnRemove.addEventListener("click", async () => {
         if (!confirm("Remover definitivamente esta disponibilidade da lista?")) return;
-        state.requests = state.requests.filter((r) => r.id !== id);
-        saveToStorage();
+
+        await api.removerDisponibilidade(id);
         renderRequests();
         renderAgendaStrip();
         showToast("Registro removido.");
@@ -244,8 +433,14 @@ function renderRequests() {
   });
 }
 
-// --- Agenda strip (resumo por data) ----------------------------------------
 
+// ============================================================================
+// Agenda rápida (resumo por data no rodapé da coluna direita)
+// ============================================================================
+
+/**
+ * Renderiza o resumo de agenda por data no strip inferior.
+ */
 function renderAgendaStrip() {
   const wrapper = $("#agendaStrip");
   if (!wrapper) return;
@@ -284,8 +479,14 @@ function renderAgendaStrip() {
   wrapper.innerHTML = html;
 }
 
-// --- Alerts / Bell ---------------------------------------------------------
 
+// ============================================================================
+// Alertas / sino
+// ============================================================================
+
+/**
+ * Atualiza o badge numérico do sino de alertas.
+ */
 function updateBell() {
   const bell = $("#bellCount");
   if (!bell) return;
@@ -293,6 +494,9 @@ function updateBell() {
   bell.textContent = total;
 }
 
+/**
+ * Registra o clique no sino para exibir a lista de alertas recentes.
+ */
 function setupBell() {
   $("#btnBell").addEventListener("click", () => {
     if (!state.alerts.length) {
@@ -315,22 +519,33 @@ function setupBell() {
   });
 }
 
-// --- Formulário -------------------------------------------------------------
 
+// ============================================================================
+// Formulário de nova disponibilidade
+// ============================================================================
+
+/**
+ * Gera um ID simples e único baseado em timestamp + random.
+ */
 function generateId() {
   return `req-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
+/**
+ * Configura submissão e limpeza do formulário principal.
+ */
 function setupForm() {
   const form = $("#requestForm");
   const btnClear = $("#btnClear");
   if (!form) return;
 
+  // Botão "Limpar"
   btnClear.addEventListener("click", () => {
     form.reset();
   });
 
-  form.addEventListener("submit", (e) => {
+  // Submissão do formulário
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const date = $("#date").value;
@@ -356,8 +571,7 @@ function setupForm() {
       createdAt: new Date().toISOString(),
     };
 
-    state.requests.push(req);
-    saveToStorage();
+    await api.criarDisponibilidade(req);
     renderRequests();
     renderAgendaStrip();
     form.reset();
@@ -365,8 +579,14 @@ function setupForm() {
   });
 }
 
-// --- Filtro por status ------------------------------------------------------
 
+// ============================================================================
+// Filtro por status (pills no topo da lista)
+// ============================================================================
+
+/**
+ * Habilita o filtro de status (Todas, Pendentes, etc.).
+ */
 function setupFilter() {
   const container = $("#statusFilter");
   if (!container) return;
@@ -385,8 +605,14 @@ function setupFilter() {
   });
 }
 
-// --- Navegação de abas (sidebar) -------------------------------------------
 
+// ============================================================================
+// Navegação lateral (sidebar)
+// ============================================================================
+
+/**
+ * Configura a navegação do menu lateral (Painel, Agenda, Configurações).
+ */
 function setupSidebarNav() {
   $$(".nav-item").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -404,56 +630,110 @@ function setupSidebarNav() {
 }
 
 function openAgendaModal() {
-  if (!state.requests.length) {
-    openModal("Agenda mensal", "<p>Sem registros para montar a agenda.</p>");
-    return;
+  const modal = document.querySelector(".modal");
+  if (modal) modal.classList.add("modal-agenda");
+
+  if (!state.agendaCursor) {
+    state.agendaCursor = new Date();
   }
 
-  // Organiza por data
-  const grouped = {};
-  state.requests.forEach((r) => {
-    if (!grouped[r.date]) grouped[r.date] = [];
-    grouped[r.date].push(r);
-  });
+  renderAgendaCalendarModal();
+}
 
-  const dates = Object.keys(grouped).sort();
+function getAgendaStatusMap() {
+  const statusPriority = {
+    canceled: 3,
+    pending: 2,
+    approved: 1,
+  };
 
-  const html = dates
-    .map((date) => {
-      const items = grouped[date]
-        .sort(sortByDate)
-        .map(
-          (r) => `
-          <tr>
-            <td>${r.period}</td>
-            <td>${r.prefer}</td>
-            <td>${r.workload}</td>
-            <td>${statusLabel(r.status)}</td>
-          </tr>
-        `
-        )
-        .join("");
+  return state.requests.reduce((acc, req) => {
+    const priority = statusPriority[req.status];
+    if (!priority) return acc;
+    const current = acc[req.date];
+    if (!current || statusPriority[current] < priority) {
+      acc[req.date] = req.status;
+    }
+    return acc;
+  }, {});
+}
 
-      return `
-      <h3 style="margin:12px 0 6px;font-size:13px;">${fmtDateBR(date)}</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px;">
-        <thead>
-          <tr style="text-align:left;">
-            <th style="padding:4px 0;">Período</th>
-            <th style="padding:4px 0;">Carga</th>
-            <th style="padding:4px 0;">Local</th>
-            <th style="padding:4px 0;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items}
-        </tbody>
-      </table>
-      `;
-    })
-    .join("");
+function renderAgendaCalendarModal() {
+  const viewDate = state.agendaCursor || new Date();
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const monthLabel = fmtMonthYear(viewDate);
+
+  const firstDay = new Date(year, month, 1);
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const startWeekday = firstDay.getDay();
+
+  const statusMap = getAgendaStatusMap();
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
+  const hasMonthRecords = state.requests.some((req) => req.date.startsWith(monthPrefix));
+
+  const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  const cells = [];
+
+  for (let i = 0; i < startWeekday; i += 1) {
+    cells.push('<div class="calendar-cell is-empty"></div>');
+  }
+
+  for (let day = 1; day <= totalDays; day += 1) {
+    const iso = toISODate(new Date(year, month, day));
+    const status = statusMap[iso];
+    const statusClass = status ? `status-${status}` : "";
+    const title = status ? statusLabel(status) : "Sem registro";
+    cells.push(
+      `<button type="button" class="calendar-day ${statusClass}" data-date="${iso}" title="${title}">
+        <span>${day}</span>
+      </button>`
+    );
+  }
+
+  const html = `
+    <div class="agenda-calendar">
+      <div class="agenda-calendar-header">
+        <button type="button" class="calendar-nav" id="agendaPrev" aria-label="Mês anterior">◀</button>
+        <div class="calendar-title">${monthLabel}</div>
+        <button type="button" class="calendar-nav" id="agendaNext" aria-label="Próximo mês">▶</button>
+      </div>
+      <div class="calendar-weekdays">
+        ${weekdays.map((day) => `<span>${day}</span>`).join("")}
+      </div>
+      <div class="calendar-grid">
+        ${cells.join("")}
+      </div>
+      <div class="calendar-legend">
+        <span class="legend-item"><span class="legend-dot status-pending"></span>Pendente</span>
+        <span class="legend-item"><span class="legend-dot status-canceled"></span>Cancelada</span>
+        <span class="legend-item"><span class="legend-dot status-approved"></span>Aprovada</span>
+      </div>
+      ${hasMonthRecords ? "" : '<div class="calendar-empty">Sem registros para este mês.</div>'}
+    </div>
+  `;
 
   openModal("Agenda mensal DEAC", html);
+  setupAgendaCalendarEvents();
+}
+
+function setupAgendaCalendarEvents() {
+  const prevBtn = $("#agendaPrev");
+  const nextBtn = $("#agendaNext");
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      state.agendaCursor = addMonths(state.agendaCursor || new Date(), -1);
+      renderAgendaCalendarModal();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      state.agendaCursor = addMonths(state.agendaCursor || new Date(), 1);
+      renderAgendaCalendarModal();
+    });
+  }
 }
 
 function openConfigModal() {
@@ -468,13 +748,13 @@ function openConfigModal() {
 
   openModal("Configurações do painel", html);
 
+  // Registra o clique do botão após o conteúdo ser inserido no DOM do modal
   setTimeout(() => {
     const btn = $("#btnWipeData");
     if (btn) {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         if (!confirm("Tem certeza que deseja limpar todos os registros locais?")) return;
-        state.requests = [];
-        saveToStorage();
+        await api.limparTodas();
         renderRequests();
         renderAgendaStrip();
         showToast("Todos os dados locais foram apagados.");
@@ -484,8 +764,15 @@ function openConfigModal() {
   }, 30);
 }
 
-// --- Inicialização ----------------------------------------------------------
 
+// ============================================================================
+// Inicialização
+// ============================================================================
+
+/**
+ * Cria registros de exemplo caso não haja nada salvo.
+ * Útil apenas em ambiente de teste/local.
+ */
 function seedIfEmpty() {
   if (state.requests.length) return;
 
@@ -529,31 +816,46 @@ function seedIfEmpty() {
       createdAt: new Date().toISOString(),
     },
   ];
+
+  saveToStorage();
 }
 
-function init() {
+/**
+ * Ponto de entrada da aplicação.
+ * Responsável por carregar dados, configurar eventos e renderizar a UI inicial.
+ */
+async function init() {
   // Nome do usuário
   const userNameEl = $("#userName");
   if (userNameEl) userNameEl.textContent = state.user.name;
 
-  // Hoje
+  // Data de hoje no cabeçalho
   const todayEl = $("#todayLabel");
   if (todayEl) todayEl.textContent = fmtTodayLabel();
 
-  // Storage
-  loadFromStorage();
-  if (!state.requests.length) seedIfEmpty();
+  // Carrega registros (localStorage / "backend" local)
+  const registros = await api.listarDisponibilidades();
+  if (!registros.length) {
+    // Se não houver nada salvo, gera dados de exemplo
+    seedIfEmpty();
+  }
 
-  // Monta UI
+  // Configurações de UI
   setupModalEvents();
   setupForm();
   setupFilter();
   setupSidebarNav();
   setupBell();
 
+  const btnOpenAgenda = $("#btnOpenAgenda");
+  if (btnOpenAgenda) {
+    btnOpenAgenda.addEventListener("click", openAgendaModal);
+  }
+
   renderRequests();
   renderAgendaStrip();
   updateBell();
 }
 
+// Inicia a aplicação quando o DOM estiver pronto
 document.addEventListener("DOMContentLoaded", init);

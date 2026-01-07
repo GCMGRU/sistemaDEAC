@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>GCM Guarulhos • DEAC – Dashboard</title>
+  <link rel="shortcut icon" href="logo_gcm.png" type="image/x-icon">
 
   <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,7 +28,7 @@
 
       <nav class="sidebar-nav">
         <button class="nav-item nav-item-active" data-view="dashboard">
-          <span class="nav-icon">📊</span>
+          <span class="nav-icon">🕒</span>
           <span class="nav-label">Painel</span>
         </button>
         <button class="nav-item" data-view="agenda">
@@ -61,8 +62,9 @@
         </div>
         <div class="header-right">
           <button class="icon-button" id="btnBell" title="Alertas">
-            🔔 <span class="icon-badge" id="bellCount">0</span>
-          </button>
+            <span class="bell-icon">🔔</span>
+            <span class="icon-badge" id="bellCount">0</span>
+            </button>
           <div class="header-date">
             <span id="todayLabel"></span>
           </div>
@@ -109,10 +111,18 @@
                   <option>8h</option>
                   <option>12h</option>
                 </select>
-              </div>
+             </div>
               <!--Região de Preferência-->  
               <div class="field">
-                <label for="prefer">Região de Preferência</label>
+                <label for="prefer" class="label-with-tooltip">
+                  Região de Preferência
+                  <span class="info-tooltip" tabindex="0" aria-label="Quando houver disponibilidade na região informada, ela será priorizada. Caso contrário, a região será designada pelo Gestor.">
+                    ℹ️
+                    <span class="tooltip-text" role="tooltip">
+                      Quando houver disponibilidade na região informada, ela será priorizada. Caso contrário, a região será designada pelo Gestor.
+                    </span>
+                  </span>
+                </label>
                 <select id="prefer" required>
                   <option value="">Selecione</option>
                   <option>Centro</option>
