@@ -147,8 +147,8 @@
                 <span class="form-hint">Os dados podem ser ajustados pela chefia antes da aprovação.</span>
               </div>
               <div class="form-footer-right">
+                <button type="submit" class="btn-primary">Enviar</button>
                 <button type="button" class="btn-ghost" id="btnClear">Limpar</button>
-                <button type="submit" class="btn-primary">Enviar Disponibilidade</button>
               </div>
             </footer>
           </form>
@@ -165,7 +165,7 @@
             <div class="pill-switch" id="statusFilter">
               <button type="button" class="pill active" data-filter="all">Todas</button>
               <button type="button" class="pill" data-filter="pending">Pendentes</button>
-              <button type="button" class="pill" data-filter="approved">Aprovadas</button>
+              <button type="button" class="pill" data-filter="approved">Agendadas</button>
               <button type="button" class="pill" data-filter="rejected">Recusadas</button>
               <button type="button" class="pill" data-filter="canceled">Canceladas</button>
             </div>
@@ -206,8 +206,11 @@
     </div>
   </div>
 
-  <!-- TOAST -->
+<!-- TOAST -->
   <div class="toast" id="toast"></div>
+
+  <button class="scroll-top" id="scrollTop" type="button" aria-label="Voltar ao topo">
+  </button>
 
   <script src="dashboard.js"></script>
 </body>
