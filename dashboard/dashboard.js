@@ -75,6 +75,26 @@ function addMonths(date, diff) {
 }
 
 // ============================================================================
+// Comportamentos de UI
+// ============================================================================
+
+function setupScrollTop() {
+  const scrollTopBtn = $("#scrollTop");
+  if (!scrollTopBtn) return;
+
+  const updateVisibility = () => {
+    scrollTopBtn.classList.toggle("is-visible", window.scrollY > 240);
+  };
+
+  window.addEventListener("scroll", updateVisibility, { passive: true });
+  updateVisibility();
+
+  scrollTopBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+// ============================================================================
 // Persistência local (storage) – hoje localStorage, amanhã backend
 // ============================================================================
 
@@ -289,7 +309,7 @@ function statusLabel(status) {
     case "pending":
       return "Pendente";
     case "approved":
-      return "Aprovada";
+      return "Agendada";
     case "rejected":
       return "Recusada";
     case "canceled":
@@ -780,7 +800,7 @@ function renderAgendaCalendarModal() {
       <div class="calendar-legend">
         <span class="legend-item"><span class="legend-dot status-pending"></span>Pendente</span>
         <span class="legend-item"><span class="legend-dot status-canceled"></span>Cancelada</span>
-        <span class="legend-item"><span class="legend-dot status-approved"></span>Aprovada</span>
+        <span class="legend-item"><span class="legend-dot status-approved"></span>Agendada</span>
       </div>
       ${hasMonthRecords ? "" : '<div class="calendar-empty">Sem registros para este mês.</div>'}
     </div>
@@ -919,6 +939,7 @@ async function init() {
   setupFilter();
   setupSidebarNav();
   setupBell();
+  setupScrollTop();
 
   const btnOpenAgenda = $("#btnOpenAgenda");
   if (btnOpenAgenda) {
