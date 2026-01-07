@@ -72,86 +72,103 @@
 
           <!-- CONTENT LAYOUT -->
       <section class="app-layout">
-        <!-- COL ESQUERDA: FORM -->
-        <section class="card form-card">
-          <header class="card-header">
-            <div>
-              <h2 class="card-title">Nova Disponibilidade</h2>
-              <p class="card-subtitle">Preencha os dados abaixo para enviar uma nova disponibilidade de serviço.</p>
-            </div>
-          </header>
+        <!-- COL ESQUERDA: FORM + PRÓXIMOS COMPROMISSOS -->
+        <div class="stacked-column">
+          <section class="card form-card">
+            <header class="card-header">
+              <div>
+                <h2 class="card-title">Nova Disponibilidade</h2>
+                <p class="card-subtitle">Preencha os dados abaixo para enviar uma nova disponibilidade de serviço.</p>
+              </div>
+            </header>
 
-          <form id="requestForm" class="card-body grid-form">
-            <div class="form-row">
-              <!--Data-->
-              <div class="field">
-                <label for="date">Data</label>
-                <input type="date" id="date" required />
-              </div>
-              <!--Período-->
-              <div class="field">
-                <label for="period">Período</label>
-                <select id="period" required>
-                  <option value="">Selecione</option>
-                  <option>Manhã</option>
-                  <option>Tarde</option>
-                  <option>Noite</option>
-                  <option>Madrugada</option>
-                </select>
-              </div>
-            </div>            
-            <!--Carga Horária-->
-            <div class="form-row">
-              <div class="field">
-                <label for="workload">Carga Horária</label>
-                <select id="workload" required>
-                  <option value="">Selecione</option>
-                  <option>6h</option>
-                  <option>8h</option>
-                  <option>12h</option>
-                </select>
-             </div>
-              <!--Região de Preferência-->  
-              <div class="field">
-                <label for="prefer" class="label-with-tooltip">
-                  Região de Preferência
-                  <span class="info-tooltip" tabindex="0" aria-label="Quando houver disponibilidade na região informada, ela será priorizada. Caso contrário, a região será designada pelo Gestor.">
-                    ℹ️
-                    <span class="tooltip-text" role="tooltip">
-                      Quando houver disponibilidade na região informada, ela será priorizada. Caso contrário, a região será designada pelo Gestor.
+            <form id="requestForm" class="card-body grid-form">
+              <div class="form-row">
+                <!--Data-->
+                <div class="field">
+                  <label for="date">Data</label>
+                  <input type="date" id="date" required />
+                </div>
+                <!--Período-->
+                <div class="field">
+                  <label for="period">Período</label>
+                  <select id="period" required>
+                    <option value="">Selecione</option>
+                    <option>Manhã</option>
+                    <option>Tarde</option>
+                    <option>Noite</option>
+                    <option>Madrugada</option>
+                  </select>
+                </div>
+              </div>            
+              <!--Carga Horária-->
+              <div class="form-row">
+                <div class="field">
+                  <label for="workload">Carga Horária</label>
+                  <select id="workload" required>
+                    <option value="">Selecione</option>
+                    <option>6h</option>
+                    <option>8h</option>
+                    <option>12h</option>
+                  </select>
+               </div>
+                <!--Região de Preferência-->  
+                <div class="field">
+                  <label for="prefer" class="label-with-tooltip">
+                    Região de Preferência
+                    <span class="info-tooltip" tabindex="0" aria-label="Quando houver disponibilidade na região informada, ela será priorizada. Caso contrário, a região será designada pelo Gestor.">
+                      ℹ️
+                      <span class="tooltip-text" role="tooltip">
+                        Quando houver disponibilidade na região informada, ela será priorizada. Caso contrário, a região será designada pelo Gestor.
+                      </span>
                     </span>
-                  </span>
-                </label>
-                <select id="prefer" required>
-                  <option value="">Selecione</option>
-                  <option>Centro</option>
-                  <option>Leste</option>
-                  <option>Oeste</option>
-                  <option>Norte</option>
-                  <option>Sul</option>
-                  <option>Sem preferência</option>
-                </select>
+                  </label>
+                  <select id="prefer" required>
+                    <option value="">Selecione</option>
+                    <option>Centro</option>
+                    <option>Leste</option>
+                    <option>Oeste</option>
+                    <option>Norte</option>
+                    <option>Sul</option>
+                    <option>Sem preferência</option>
+                  </select>
+                </div>
               </div>
-            </div>
-            <!--Observações-->
-            <div class="form-row">
-              <div class="field full">
-                <label for="obs">Observações</label>
-                <textarea id="obs" rows="3" placeholder="Informações adicionais, restrições, preferências..."></textarea>
+              <!--Observações-->
+              <div class="form-row">
+                <div class="field full">
+                  <label for="obs">Observações</label>
+                  <textarea id="obs" rows="3" placeholder="Informações adicionais, restrições, preferências..."></textarea>
+                </div>
               </div>
-            </div>
 
-            <footer class="form-footer">
-              <div class="form-footer-left">
-                <span class="form-hint">Os dados podem ser ajustados pela chefia antes da aprovação.</span>
+              <footer class="form-footer">
+                <div class="form-footer-left">
+                  <span class="form-hint">Os dados podem ser ajustados pela chefia antes da aprovação.</span>
+                </div>
+                <div class="form-footer-right">
+                  <button type="submit" class="btn-primary">Enviar</button>
+                  <button type="button" class="btn-ghost" id="btnClear">Limpar</button>
+                </div>
+              </footer>
+            </form>
+          </section>
+
+          <section class="card upcoming-card">
+            <header class="card-header">
+              <div>
+                <h2 class="card-title">Próximos Compromissos</h2>
+                <p class="card-subtitle">Somente as 3 próximas escalas com status agendado.</p>
               </div>
-              <div class="form-footer-right">
-                <button type="submit" class="btn-primary">Enviar</button>
-                <button type="button" class="btn-ghost" id="btnClear">Limpar</button>
-              </div>
+            </header>
+            <div class="card-body">
+              <div class="upcoming-list" id="upcomingList"></div>
+            </div>
+            <footer class="card-footer upcoming-footer">
+              <button type="button" class="btn-soft btn-sm" id="btnOpenAgenda">Abrir agenda</button>
             </footer>
-          </form>
-        </section>
+          </section>
+        </div>
 
         <!-- COL DIREITA: LISTAGEM + AGENDA -->
         <section class="card list-card">

@@ -480,6 +480,8 @@ function renderRequests() {
       });
     }
   });
+
+  renderUpcomingAppointments();
 }
 
 
@@ -524,6 +526,45 @@ function renderAgendaStrip() {
     .join("");
 
   wrapper.innerHTML = html;
+}
+
+// ============================================================================
+// Próximos compromissos (somente agendadas)
+// ============================================================================
+
+function getUpcomingAppointments() {
+  const todayIso = toISODate(new Date());
+  return state.requests
+    .filter((req) => req.status === "approved" && req.date >= todayIso)
+    .sort(sortByDate)
+    .slice(0, 3);
+}
+
+function renderUpcomingAppointments() {
+  const listEl = $("#upcomingList");
+  if (!listEl) return;
+
+  const items = getUpcomingAppointments();
+
+  if (!items.length) {
+    listEl.innerHTML = '<div class="upcoming-empty">Nenhum compromisso agendado no momento.</div>';
+    return;
+  }
+
+  listEl.innerHTML = items
+    .map(
+      (req) => `
+      <article class="upcoming-item">
+        <span class="upcoming-icon">📅</span>
+        <div class="upcoming-info">
+          <div class="upcoming-title">${fmtDateBR(req.date)} • ${req.period} • ${req.prefer}</div>
+          <div class="upcoming-meta">Carga: ${req.workload || "—"}</div>
+        </div>
+        <span class="upcoming-badge">Agendada</span>
+      </article>
+    `
+    )
+    .join("");
 }
 
 
