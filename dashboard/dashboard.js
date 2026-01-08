@@ -983,7 +983,7 @@ function seedIfEmpty() {
       id: generateId(),
       date: d2,
       period: "Tarde",
-      prefer: "Zona Sul",
+      prefer: "Sul",
       workload: "6h",
       obs: "",
       status: "approved",
@@ -1047,3 +1047,4 @@ async function init() {
 
 // Inicia a aplicação quando o DOM estiver pronto
 document.addEventListener("DOMContentLoaded", init);
+
