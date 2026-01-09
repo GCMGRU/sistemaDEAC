@@ -22,22 +22,16 @@
         <img src="logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" class="brand-logo" />
         <div class="brand-text">
           <span class="brand-title">GCM Guarulhos</span>
-          <span class="brand-subtitle">DEAC • Dashboard</span>
+          <span class="brand-subtitle">DEAC - Sistema</span>
         </div>
       </div>
 
       <nav class="sidebar-nav">
         <button class="nav-item nav-item-active" data-view="dashboard">
-          <span class="nav-icon">🕒</span>
-          <span class="nav-label">Painel</span>
+          <span class="nav-label">DEAC</span>
         </button>
-        <button class="nav-item" data-view="agenda">
-          <span class="nav-icon">📅</span>
-          <span class="nav-label">Agenda</span>
-        </button>
-        <button class="nav-item" data-view="config">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-label">Configurações</span>
+        <button class="nav-item" data-view="requests">
+          <span class="nav-label">Minhas Solicitações</span>
         </button>
       </nav>
 
@@ -46,6 +40,7 @@
           <div class="user-avatar">G</div>
           <div class="user-meta">
             <span class="user-name" id="userName">GCM • Pelegrino</span>
+            <span class="user-email">guilhermedevj@gmail.com</span>
           </div>
         </div>
       </div>
@@ -60,11 +55,8 @@
           <p class="header-subtitle">Registre e acompanhe suas solicitações para DEAC.</p>
         </div>
         <div class="header-right">
-          <button class="icon-button" id="btnBell" title="Alertas">
-            <span class="bell-icon">🔔</span>
-            <span class="icon-badge" id="bellCount">0</span>
-            </button>
           <div class="header-date">
+            <span class="calendar-icon">📅</span>
             <span id="todayLabel"></span>
           </div>
         </div>
@@ -86,12 +78,12 @@
               <div class="form-row">
                 <!--Data-->
                 <div class="field">
-                  <label for="date">Data</label>
+                  <label for="date">Data <span class="required">*</span></label>
                   <input type="date" id="date" required />
                 </div>
                 <!--Período-->
                 <div class="field">
-                  <label for="period">Período</label>
+                  <label for="period">Período <span class="required">*</span></label>
                   <select id="period" required>
                     <option value="">Selecione</option>
                     <option>Manhã</option>
@@ -104,7 +96,7 @@
               <!--Carga Horária-->
               <div class="form-row">
                 <div class="field">
-                  <label for="workload">Carga Horária</label>
+                  <label for="workload">Carga Horária <span class="required">*</span></label>
                   <select id="workload" required>
                     <option value="">Selecione</option>
                     <option>6h</option>
@@ -115,7 +107,7 @@
                 <!--Região de Preferência-->  
                 <div class="field">
                   <label for="prefer" class="label-with-tooltip">
-                    Região de Preferência
+                    Região de Preferência <span class="required">*</span>
                     <span class="info-tooltip" tabindex="0" aria-label="Quando houver disponibilidade na região informada, ela será priorizada. Caso contrário, a região será designada pelo Gestor.">
                       ℹ️
                       <span class="tooltip-text" role="tooltip">
@@ -147,8 +139,14 @@
                   <span class="form-hint">Os dados podem ser ajustados pela chefia antes da aprovação.</span>
                 </div>
                 <div class="form-footer-right">
-                  <button type="submit" class="btn-primary">Enviar</button>
-                  <button type="button" class="btn-ghost" id="btnClear">Limpar</button>
+                  <button type="button" class="btn-ghost" id="btnClear">
+                    <span class="btn-icon">↻</span>
+                    Limpar
+                  </button>
+                  <button type="submit" class="btn-primary">
+                    <span class="btn-icon">➤</span>
+                    Enviar
+                  </button>
                 </div>
               </footer>
             </form>
@@ -156,16 +154,21 @@
 
           <section class="card upcoming-card">
             <header class="card-header">
-              <div>
-                <h2 class="card-title">Próximos Compromissos</h2>
-                <p class="card-subtitle">Somente as 3 próximas escalas com status agendado.</p>
+              <div class="card-title-wrap">
+                <span class="card-icon">📅</span>
+                <div>
+                  <h2 class="card-title">Próximos Compromissos</h2>
+                  <p class="card-subtitle">Suas próximas escalas agendadas</p>
+                </div>
               </div>
             </header>
             <div class="card-body">
               <div class="upcoming-list" id="upcomingList"></div>
             </div>
             <footer class="card-footer upcoming-footer">
-              <button type="button" class="btn-soft btn-sm" id="btnOpenAgenda">Abrir agenda</button>
+              <button type="button" class="btn-link" id="btnOpenAgenda">
+                Ver todas as solicitações <span aria-hidden="true">›</span>
+              </button>
             </footer>
           </section>
         </div>
@@ -189,8 +192,11 @@
 
           <section class="card-body">
             <div class="list-empty" id="listEmpty">
-              <p>Nenhuma disponibilidade cadastrada ainda.</p>
-              <p class="muted">Envie sua primeira disponibilidade pelo formulário ao lado.</p>
+              <div class="empty-state">
+                <div class="empty-state-icon">📄</div>
+                <p>Nenhuma solicitação encontrada</p>
+                <p class="muted">Envie sua primeira disponibilidade pelo formulário</p>
+              </div>
             </div>
 
             <div class="request-list" id="requestList"></div>
