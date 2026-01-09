@@ -25,7 +25,7 @@ const $$ = (sel) => Array.from(document.querySelectorAll(sel));
  */
 const state = {
   filter: "all",
-  user: { name: "GCM • 3ªCL Pelegrino" },
+  user: { name: "Guilherme Machado" },
   requests: [],
   alerts: [],
   agendaCursor: null,
@@ -64,8 +64,12 @@ function fmtDateBR(iso) {
  */
 function fmtTodayLabel() {
   const now = new Date();
-  const opts = { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" };
-  return now.toLocaleDateString("pt-BR", opts).replace(",", "");
+  const opts = { weekday: "long", day: "2-digit", month: "long" };
+  const label = now.toLocaleDateString("pt-BR", opts);
+  return label
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function fmtMonthYear(date) {
@@ -547,7 +551,15 @@ function renderUpcomingAppointments() {
   const items = getUpcomingAppointments();
 
   if (!items.length) {
-    listEl.innerHTML = '<div class="upcoming-empty">Nenhum compromisso agendado no momento.</div>';
+    listEl.innerHTML = `
+      <div class="upcoming-empty">
+        <div class="empty-state">
+          <div class="empty-state-icon">🗓️</div>
+          <p>Nenhum compromisso agendado</p>
+          <p class="muted">Registre sua disponibilidade acima</p>
+        </div>
+      </div>
+    `;
     return;
   }
 
@@ -586,7 +598,10 @@ function updateBell() {
  * Registra o clique no sino para exibir a lista de alertas recentes.
  */
 function setupBell() {
-  $("#btnBell").addEventListener("click", () => {
+  const bellButton = $("#btnBell");
+  if (!bellButton) return;
+
+  bellButton.addEventListener("click", () => {
     if (!state.alerts.length) {
       openModal("Alertas", "<p>Nenhum alerta recente.</p>");
       return;
