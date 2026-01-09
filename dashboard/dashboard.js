@@ -28,7 +28,6 @@ const state = {
   user: { name: "Guilherme Machado" },
   requests: [],
   alerts: [],
-  agendaCursor: null,
   requestsPage: 1,
 };
 
@@ -70,15 +69,6 @@ function fmtTodayLabel() {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-}
-
-function fmtMonthYear(date) {
-  const label = date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
-function addMonths(date, diff) {
-  return new Date(date.getFullYear(), date.getMonth() + diff, 1);
 }
 
 // ============================================================================
@@ -734,209 +724,6 @@ function setupRequestPagination() {
 }
 
 
-// ============================================================================
-// Navegação lateral (sidebar)
-// ============================================================================
-
-/**
- * Configura a navegação do menu lateral (Painel, Agenda, Configurações).
- */
-function setupSidebarNav() {
-  $$(".nav-item").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      $$(".nav-item").forEach((b) => b.classList.remove("nav-item-active"));
-      btn.classList.add("nav-item-active");
-
-      const view = btn.dataset.view;
-      if (view === "agenda") {
-        openAgendaModal();
-      } else if (view === "config") {
-        openConfigModal();
-      }
-    });
-  });
-}
-
-function openAgendaModal() {
-  const modal = document.querySelector(".modal");
-  if (modal) modal.classList.add("modal-agenda");
-
-  if (!state.agendaCursor) {
-    state.agendaCursor = new Date();
-  }
-
-  renderAgendaCalendarModal();
-}
-
-function getAgendaStatusMap() {
-  const statusPriority = {
-    canceled: 3,
-    pending: 2,
-    approved: 1,
-  };
-
-  return state.requests.reduce((acc, req) => {
-    const priority = statusPriority[req.status];
-    if (!priority) return acc;
-    const current = acc[req.date];
-    if (!current || statusPriority[current] < priority) {
-      acc[req.date] = req.status;
-    }
-    return acc;
-  }, {});
-}
-
-function buildAgendaTooltip(records) {
-  if (!records.length) return "";
-
-  const sections = records
-    .map((record) => {
-      const status = record.status;
-      const title = statusLabel(status);
-      const dateLine = `<div class="tooltip-line"><strong>Data:</strong> ${fmtDateBR(
-        record.date
-      )}</div>`;
-      const periodLine = `<div class="tooltip-line"><strong>Período:</strong> ${record.period}</div>`;
-      const workloadLine = `<div class="tooltip-line"><strong>Carga horária:</strong> ${record.workload}</div>`;
-
-      if (status === "pending") {
-        const preferLine = `<div class="tooltip-line"><strong>Região de preferência:</strong> ${record.prefer}</div>`;
-        const obsValue = record.obs ? record.obs : "Sem observações";
-        const obsLine = `<div class="tooltip-line"><strong>Observações:</strong> ${obsValue}</div>`;
-        return `
-          <div class="calendar-tooltip-section">
-            <div class="tooltip-title">${title}</div>
-            ${dateLine}
-            ${periodLine}
-            ${preferLine}
-            ${workloadLine}
-            ${obsLine}
-          </div>
-        `;
-      }
-
-      if (status === "approved") {
-        const localLine = `<div class="tooltip-line"><strong>Local:</strong> —</div>`;
-        const timeLine = `<div class="tooltip-line"><strong>Horário:</strong> —</div>`;
-        return `
-          <div class="calendar-tooltip-section">
-            <div class="tooltip-title">${title}</div>
-            ${dateLine}
-            ${periodLine}
-            ${localLine}
-            ${workloadLine}
-            ${timeLine}
-          </div>
-        `;
-      }
-
-      return `
-        <div class="calendar-tooltip-section">
-          <div class="tooltip-title">${title}</div>
-          ${dateLine}
-          ${periodLine}
-          ${workloadLine}
-        </div>
-      `;
-    })
-    .join('<div class="tooltip-divider"></div>');
-
-  return `<div class="calendar-tooltip">${sections}</div>`;
-}
-
-function renderAgendaCalendarModal() {
-  const viewDate = state.agendaCursor || new Date();
-  const year = viewDate.getFullYear();
-  const month = viewDate.getMonth();
-  const monthLabel = fmtMonthYear(viewDate);
-
-  const firstDay = new Date(year, month, 1);
-  const totalDays = new Date(year, month + 1, 0).getDate();
-  const startWeekday = firstDay.getDay();
-
-  const statusMap = getAgendaStatusMap();
-  const recordsByDate = state.requests.reduce((acc, req) => {
-    if (!acc[req.date]) acc[req.date] = [];
-    acc[req.date].push(req);
-    return acc;
-  }, {});
-  const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
-  const hasMonthRecords = state.requests.some((req) => req.date.startsWith(monthPrefix));
-
-  const weekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-  const cells = [];
-
-  for (let i = 0; i < startWeekday; i += 1) {
-    cells.push('<div class="calendar-cell is-empty"></div>');
-  }
-
-  for (let day = 1; day <= totalDays; day += 1) {
-  const iso = toISODate(new Date(year, month, day));
-  const status = statusMap[iso];
-  const statusClass = status ? `status-${status}` : "";
-  const title = status ? statusLabel(status) : "Sem registro";
-  const tooltip = status ? buildAgendaTooltip(recordsByDate[iso] || []) : "";
-
-  // índice da coluna (0 = domingo, 6 = sábado)
-  const colIndex = (startWeekday + (day - 1)) % 7;
-
-  // marca sexta (5) e sábado (6) como "borda direita"
-  const edgeClass = colIndex >= 5 ? " calendar-day--edge-right" : "";
-
-  cells.push(
-    `<button type="button" class="calendar-day ${statusClass}${edgeClass}" data-date="${iso}" title="${title}">
-      <span>${day}</span>
-      ${tooltip}
-    </button>`
-  );
-}
-
-
-  const html = `
-    <div class="agenda-calendar">
-      <div class="agenda-calendar-header">
-        <button type="button" class="calendar-nav" id="agendaPrev" aria-label="Mês anterior">◀</button>
-        <div class="calendar-title">${monthLabel}</div>
-        <button type="button" class="calendar-nav" id="agendaNext" aria-label="Próximo mês">▶</button>
-      </div>
-      <div class="calendar-weekdays">
-        ${weekdays.map((day) => `<span>${day}</span>`).join("")}
-      </div>
-      <div class="calendar-grid">
-        ${cells.join("")}
-      </div>
-      <div class="calendar-legend">
-        <span class="legend-item"><span class="legend-dot status-pending"></span>Pendente</span>
-        <span class="legend-item"><span class="legend-dot status-canceled"></span>Cancelada</span>
-        <span class="legend-item"><span class="legend-dot status-approved"></span>Agendada</span>
-      </div>
-      ${hasMonthRecords ? "" : '<div class="calendar-empty">Sem registros para este mês.</div>'}
-    </div>
-  `;
-
-  openModal("Agenda mensal DEAC", html);
-  setupAgendaCalendarEvents();
-}
-
-function setupAgendaCalendarEvents() {
-  const prevBtn = $("#agendaPrev");
-  const nextBtn = $("#agendaNext");
-
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      state.agendaCursor = addMonths(state.agendaCursor || new Date(), -1);
-      renderAgendaCalendarModal();
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      state.agendaCursor = addMonths(state.agendaCursor || new Date(), 1);
-      renderAgendaCalendarModal();
-    });
-  }
-}
-
 function openConfigModal() {
   const html = `
     <p style="margin-top:0;">Este painel é apenas uma simulação local para organização das suas disponibilidades.</p>
@@ -1046,14 +833,8 @@ async function init() {
   setupForm();
   setupFilter();
   setupRequestPagination();
-  setupSidebarNav();
   setupBell();
   setupScrollTop();
-
-  const btnOpenAgenda = $("#btnOpenAgenda");
-  if (btnOpenAgenda) {
-    btnOpenAgenda.addEventListener("click", openAgendaModal);
-  }
 
   renderRequests();
   renderAgendaStrip();

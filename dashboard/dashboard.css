@@ -135,6 +135,7 @@ body.app-body {
   font-size: 14px;
   cursor: pointer;
   transition: background var(--transition-med), border-color var(--transition-med), color var(--transition-med), transform var(--transition-fast);
+  text-decoration: none;
 }
 
 .nav-item:hover {
@@ -161,6 +162,17 @@ body.app-body {
 
 .nav-label {
   font-weight: 600;
+}
+
+.nav-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-icon {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .sidebar-footer {
@@ -723,6 +735,7 @@ textarea:focus {
   gap: 6px;
   cursor: pointer;
   padding: 0;
+  text-decoration: none;
 }
 
 .btn-link span {
@@ -1036,324 +1049,6 @@ textarea:focus {
   padding: 8px 0;
 }
 
-/* AGENDA CALENDAR (MODAL) */
-
-.modal.modal-agenda {
-  width: min(920px, 100% - 32px);
-  max-height: 85vh;
-}
-
-.agenda-calendar {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  color: var(--text);
-}
-
-.agenda-calendar-header {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 42px;
-  align-items: center;
-  gap: 8px;
-}
-
-.calendar-title {
-  text-align: center;
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.calendar-nav {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.7);
-  color: var(--text);
-  cursor: pointer;
-  transition: transform var(--transition-fast), border-color var(--transition-fast);
-}
-
-.calendar-nav:hover {
-  transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.35);
-}
-
-.calendar-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
-  text-transform: uppercase;
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: 0.08em;
-}
-
-.calendar-weekdays span {
-  text-align: center;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.calendar-cell.is-empty {
-  height: 54px;
-}
-
-.calendar-day {
-  height: 54px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(3, 14, 30, 0.85);
-  color: var(--text);
-  font-weight: 600;
-  cursor: pointer;
-  position: relative;
-  overflow: visible;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-  transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
-   z-index: 1;  
-}
-
-.calendar-day:hover {
-  transform: translateY(-1px);
-  border-color: rgba(255, 255, 255, 0.28);
-   z-index: 20;  
-}
-
-.calendar-tooltip {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 10px);
-  transform: translateX(-50%) translateY(6px);
-  min-width: 220px;
-  max-width: 260px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #020617;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  color: var(--text);
-  font-size: 11px;
-  text-align: left;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: auto;
-  transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
-  z-index: 3;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.45);
-}
-
-/* continua abrindo quando passa o mouse no dia */
-.calendar-day:hover .calendar-tooltip,
-.calendar-day .calendar-tooltip:hover {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-}
-
-
-/* Para dias na borda direita do calendário,
-   abre o tooltip um pouco mais "pra dentro" */
-.calendar-day.calendar-day--edge-right .calendar-tooltip {
-  left: auto;
-  right: 0;
-  transform: translateY(6px);
-}
-
-.calendar-day.calendar-day--edge-right:hover .calendar-tooltip {
-  transform: translateY(0);
-}
-
-
-.calendar-tooltip-section + .calendar-tooltip-section {
-  margin-top: 8px;
-}
-/* "Setinha" do tooltip (padrão, centralizada) */
-.calendar-tooltip::before,
-.calendar-tooltip::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -8px; /* fica colada na borda de baixo do tooltip */
-  transform: translateX(-50%);
-  border-style: solid;
-}
-
-/* borda da seta (mesma cor da borda do tooltip) */
-.calendar-tooltip::before {
-  border-width: 8px 8px 0 8px; /* triângulo apontando pra baixo */
-  border-color: rgba(148, 163, 184, 0.35) transparent transparent transparent;
-}
-
-/* preenchimento da seta (mesma cor do fundo do tooltip) */
-.calendar-tooltip::after {
-  bottom: -7px; /* 1px pra cima pra parecer borda */
-  border-width: 7px 7px 0 7px;
-  border-color: #020617 transparent transparent transparent;
-}/* Nos dias de borda direita, desloca a seta um pouco pra dentro */
-.calendar-day.calendar-day--edge-right .calendar-tooltip::before,
-.calendar-day.calendar-day--edge-right .calendar-tooltip::after {
-  left: auto;
-  right: 22px;   /* ajusta se quiser mais pra esquerda/direita */
-  transform: none;
-}
-
-
-
-.tooltip-divider {
-  height: 1px;
-  margin: 8px 0;
-  background: rgba(148, 163, 184, 0.25);
-}
-
-.tooltip-title {
-  font-weight: 600;
-  font-size: 12px;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.tooltip-line {
-  margin-bottom: 4px;
-  color: rgba(226, 232, 240, 0.88);
-}
-
-.tooltip-line strong {
-  color: rgba(248, 250, 252, 0.95);
-  font-weight: 600;
-}
-
-.calendar-day span {
-  position: relative;
-  z-index: 1;
-}
-
-.calendar-day[data-tooltip]::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  transform: translateX(-50%) translateY(6px);
-  background: rgba(2, 8, 22, 0.95);
-  color: var(--text);
-  font-size: 11px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: var(--shadow-soft);
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
-  z-index: 4;
-}
-
-.calendar-day[data-tooltip]:hover::after,
-.calendar-day[data-tooltip]:focus-visible::after {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-.calendar-day.status-pending {
-  background: rgba(255, 193, 7, 0.25);
-  border-color: rgba(255, 193, 7, 0.65);
-  color: #ffe082;
-}
-
-.calendar-day.status-canceled {
-  background: rgba(255, 82, 82, 0.22);
-  border-color: rgba(255, 82, 82, 0.7);
-  color: #ff8a80;
-}
-
-.calendar-day.status-approved {
-  background: rgba(105, 240, 174, 0.22);
-  border-color: rgba(105, 240, 174, 0.7);
-  color: #b9f6ca;
-}
-
-.calendar-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1px solid currentColor;
-}
-
-.legend-dot.status-pending {
-  color: #ffd54f;
-  background: rgba(255, 193, 7, 0.45);
-}
-
-.legend-dot.status-canceled {
-  color: #ff8a80;
-  background: rgba(255, 82, 82, 0.45);
-}
-
-.legend-dot.status-approved {
-  color: #b9f6ca;
-  background: rgba(105, 240, 174, 0.45);
-}
-
-.calendar-empty {
-  text-align: center;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* botão de copiar no canto superior direito */
-.calendar-tooltip-copy {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.9);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: var(--muted);
-  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-/* ícone do botão (clipboard) */
-.calendar-tooltip-copy::before {
-  content: "📋";
-}
-
-.calendar-tooltip-copy:hover {
-  background: rgba(37, 99, 235, 0.16);
-  border-color: var(--accent-strong);
-  color: var(--text);
-  transform: translateY(-1px);
-  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.55);
-}
-
-
 /* MODAL */
 
 .modal-backdrop {
@@ -1403,9 +1098,6 @@ textarea:focus {
   font-size: 13px;
   color: var(--muted);
   overflow-y: auto;
-}
-.agenda-calendar {
-  overflow: visible;
 }
 
 .modal-footer {
