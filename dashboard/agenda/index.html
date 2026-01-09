@@ -1,1 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GCM Guarulhos • DEAC – Agenda</title>
+  <link rel="shortcut icon" href="../logo_gcm.png" type="image/x-icon">
 
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="../dashboard.css" />
+  <link rel="stylesheet" href="agenda.css" />
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <img src="../logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" class="brand-logo" />
+        <div class="brand-text">
+          <span class="brand-title">GCM Guarulhos</span>
+          <span class="brand-subtitle">DEAC - Sistema</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="../dashboard.html">
+          <span class="nav-label">DEAC</span>
+        </a>
+        <a class="nav-item" href="../dashboard.html">
+          <span class="nav-label">Minhas Solicitações</span>
+        </a>
+        <a class="nav-item nav-item-active" href="index.html">
+          <span class="nav-content">
+            <span class="nav-icon" aria-hidden="true">📆</span>
+            <span class="nav-label">Agenda</span>
+          </span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">G</div>
+          <div class="user-meta">
+            <span class="user-name" id="userName">GCM • Pelegrino</span>
+            <span class="user-email">guilhermedevj@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="app-main">
+      <header class="app-header">
+        <div class="header-left">
+          <h1 class="header-title">Agenda mensal DEAC</h1>
+          <p class="header-subtitle">Visualize todas as disponibilidades e o status de cada data.</p>
+        </div>
+        <div class="header-right">
+          <div class="header-date">
+            <span class="calendar-icon">📅</span>
+            <span id="todayLabel"></span>
+          </div>
+        </div>
+      </header>
+
+      <section class="agenda-page">
+        <section class="card agenda-page-card">
+          <div class="card-body">
+            <div id="agendaCalendar" class="agenda-calendar"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="agenda.js"></script>
+</body>
+</html>
