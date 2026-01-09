@@ -1,1 +1,181 @@
+.solicitacoes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 
+.solicitacoes-header {
+  padding-bottom: 6px;
+}
+
+.solicitacoes-kpis {
+  margin-top: 4px;
+}
+
+.summary-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  min-height: 84px;
+}
+
+.summary-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.summary-value-warning {
+  color: #d97706;
+}
+
+.summary-value-success {
+  color: #0f9d58;
+}
+
+.summary-value-danger {
+  color: #dc2626;
+}
+
+.summary-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.summary-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.summary-icon-neutral {
+  background: #eef2f7;
+  color: #5b6b86;
+}
+
+.summary-icon-warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.summary-icon-success {
+  background: #dcfce7;
+  color: #0f9d58;
+}
+
+.summary-icon-danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.filter-card {
+  padding: 6px;
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.filter-field input,
+.filter-field select {
+  width: 100%;
+  padding-left: 38px;
+  padding-right: 38px;
+  height: 40px;
+}
+
+.filter-select select {
+  padding-right: 14px;
+}
+
+.filter-icon {
+  position: absolute;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  color: #7c8aa2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.filter-icon-right {
+  left: auto;
+  right: 12px;
+}
+
+.solicitacoes-card .card-header {
+  padding: 16px 18px;
+}
+
+.solicitacoes-card .card-body {
+  padding: 40px 18px 60px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f1f4f9;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+@media (max-width: 860px) {
+  .filter-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

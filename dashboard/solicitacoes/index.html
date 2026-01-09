@@ -1,1 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GCM Guarulhos • DEAC – Minhas Solicitações</title>
+  <link rel="shortcut icon" href="../logo_gcm.png" type="image/x-icon">
 
+  <!-- Fonte -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="../dashboard.css" />
+  <link rel="stylesheet" href="solicitacoes.css" />
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <img src="../logo_gcm.png" alt="Guarda Civil Municipal de Guarulhos" class="brand-logo" />
+        <div class="brand-text">
+          <span class="brand-title">GCM Guarulhos</span>
+          <span class="brand-subtitle">DEAC - Sistema</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="../dashboard.html">
+          <span class="nav-label">DEAC</span>
+        </a>
+        <a class="nav-item nav-item-active" href="index.html">
+          <span class="nav-label">Minhas Solicitações</span>
+        </a>
+        <a class="nav-item" href="../agenda/index.html">
+          <span class="nav-content">
+            <span class="nav-icon" aria-hidden="true">📆</span>
+            <span class="nav-label">Agenda</span>
+          </span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">G</div>
+          <div class="user-meta">
+            <span class="user-name" id="userName">GCM • Pelegrino</span>
+            <span class="user-email">guilhermedevj@gmail.com</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="app-main">
+      <header class="app-header solicitacoes-header">
+        <div class="header-left">
+          <h1 class="header-title">Minhas Solicitações</h1>
+          <p class="header-subtitle">Histórico completo das suas disponibilidades DEAC</p>
+        </div>
+      </header>
+
+      <section class="solicitacoes-page">
+        <section class="kpi-grid solicitacoes-kpis">
+          <article class="kpi-card summary-card">
+            <div class="summary-info">
+              <span class="summary-label">Total</span>
+              <span class="summary-value">0</span>
+            </div>
+            <div class="summary-icon summary-icon-neutral" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6.5 3.5h7l4 4v12.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.6" />
+                <path d="M13.5 3.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6" />
+                <path d="M8 12h7M8 16h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </div>
+          </article>
+          <article class="kpi-card summary-card">
+            <div class="summary-info">
+              <span class="summary-label">Pendentes</span>
+              <span class="summary-value summary-value-warning">0</span>
+            </div>
+            <div class="summary-icon summary-icon-warning" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6.5 4.5h11a1 1 0 0 1 1 1v2c0 .3-.1.6-.3.8l-3.7 4.2 3.7 4.2c.2.2.3.5.3.8v2a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-2c0-.3.1-.6.3-.8l3.7-4.2-3.7-4.2a1 1 0 0 1-.3-.8v-2a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" />
+              </svg>
+            </div>
+          </article>
+          <article class="kpi-card summary-card">
+            <div class="summary-info">
+              <span class="summary-label">Agendadas</span>
+              <span class="summary-value summary-value-success">0</span>
+            </div>
+            <div class="summary-icon summary-icon-success" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+                <path d="M9.2 12.1l2 2.1 3.7-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </article>
+          <article class="kpi-card summary-card">
+            <div class="summary-info">
+              <span class="summary-label">Recusadas</span>
+              <span class="summary-value summary-value-danger">0</span>
+            </div>
+            <div class="summary-icon summary-icon-danger" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+                <path d="M9.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              </svg>
+            </div>
+          </article>
+        </section>
+
+        <section class="card filter-card">
+          <div class="filter-row">
+            <label class="filter-field">
+              <span class="filter-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <rect x="4.5" y="6" width="15" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
+                  <path d="M8 4.5v3M16 4.5v3M4.5 10h15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+              </span>
+              <input type="text" placeholder="dd/mm/aaaa" />
+              <span class="filter-icon filter-icon-right" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M8.5 10h7m-7 4h5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                  <rect x="6" y="5.5" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+              </span>
+            </label>
+            <label class="filter-field filter-select">
+              <span class="filter-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M4 6h16l-6 7v4l-4 2v-6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <select>
+                <option>Todos os status</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="card solicitacoes-card">
+          <header class="card-header">
+            <h2 class="card-title">Solicitações (0)</h2>
+          </header>
+          <div class="card-body">
+            <div class="empty-state">
+              <div class="empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M6.5 3.5h7l4 4v12.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 5 20V5a1.5 1.5 0 0 1 1.5-1.5z" fill="none" stroke="currentColor" stroke-width="1.6" />
+                  <path d="M13.5 3.5v4h4" fill="none" stroke="currentColor" stroke-width="1.6" />
+                  <path d="M8 12h7M8 16h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+              </div>
+              <p>Nenhuma solicitação encontrada</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="solicitacoes.js"></script>
+</body>
+</html>
